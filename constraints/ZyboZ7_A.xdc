@@ -99,14 +99,14 @@ set_property -dict {PACKAGE_PIN B19 IOSTANDARD TMDS_33} [get_ports {hdmi_tx_data
 
 
 #Pmod Header JB
-set_property -dict { PACKAGE_PIN V8    IOSTANDARD LVCMOS33     } [get_ports { jb_p[1] }]; #IO_L15P_T2_DQS_13 Sch=jb_p[1]
-set_property -dict { PACKAGE_PIN W8    IOSTANDARD LVCMOS33     } [get_ports { jb_n[1] }]; #IO_L15N_T2_DQS_13 Sch=jb_n[1]
-set_property -dict { PACKAGE_PIN U7    IOSTANDARD LVCMOS33     } [get_ports { jb_p[2] }]; #IO_L11P_T1_SRCC_13 Sch=jb_p[2]
-set_property -dict { PACKAGE_PIN V7    IOSTANDARD LVCMOS33     } [get_ports { jb_n[2] }]; #IO_L11N_T1_SRCC_13 Sch=jb_n[2]
-set_property -dict { PACKAGE_PIN Y7    IOSTANDARD LVCMOS33     } [get_ports { jb_p[3] }]; #IO_L13P_T2_MRCC_13 Sch=jb_p[3]
-set_property -dict { PACKAGE_PIN Y6    IOSTANDARD LVCMOS33     } [get_ports { jb_n[3] }]; #IO_L13N_T2_MRCC_13 Sch=jb_n[3]
-set_property -dict { PACKAGE_PIN V6    IOSTANDARD LVCMOS33     } [get_ports { jb_p[4] }]; #IO_L22P_T3_13 Sch=jb_p[4]
-set_property -dict { PACKAGE_PIN W6    IOSTANDARD LVCMOS33     } [get_ports { jb_n[4] }]; #IO_L22N_T3_13 Sch=jb_n[4]
+set_property -dict {PACKAGE_PIN V8 IOSTANDARD LVCMOS33} [get_ports {jb_p[1]}]
+set_property -dict {PACKAGE_PIN W8 IOSTANDARD LVCMOS33} [get_ports {jb_n[1]}]
+set_property -dict {PACKAGE_PIN U7 IOSTANDARD LVCMOS33} [get_ports {jb_p[2]}]
+set_property -dict {PACKAGE_PIN V7 IOSTANDARD LVCMOS33} [get_ports {jb_n[2]}]
+set_property -dict {PACKAGE_PIN Y7 IOSTANDARD LVCMOS33} [get_ports {jb_p[3]}]
+set_property -dict {PACKAGE_PIN Y6 IOSTANDARD LVCMOS33} [get_ports {jb_n[3]}]
+set_property -dict {PACKAGE_PIN V6 IOSTANDARD LVCMOS33} [get_ports {jb_p[4]}]
+set_property -dict {PACKAGE_PIN W6 IOSTANDARD LVCMOS33} [get_ports {jb_n[4]}]
 
 
 ##Pmod Header JC
@@ -190,6 +190,7 @@ set_property -dict {PACKAGE_PIN L16 IOSTANDARD LVDS_25} [get_ports {dphy_data_hs
 #set_property PACKAGE_PIN W11 [get_ports {netic19_w11}]; #IO_L18P_T2_13
 #set_property PACKAGE_PIN W9 [get_ports {netic19_w9}]; #IO_L16N_T2_13
 #set_property PACKAGE_PIN Y9 [get_ports {netic19_y9}]; #IO_L14P_T2_SRCC_13
+
 
 
 
