@@ -151,6 +151,8 @@ Drone_Cam_BD Drone_Cam_BD_inst
  .TMDS_Data_n_0(hdmi_tx_data_n),
  .TMDS_Data_p_0(hdmi_tx_data_p),
 // .sys_clock    (sys_clock),
+.tlast(jb_p[3]),  //output tlast;
+.tuser(jb_n[3]),  //output tuser;
  .Out_pHSync(jb_n[1]),
  .Out_pVDE  (jb_p[2]),  
  .Out_pVSync(jb_p[1]),
@@ -216,17 +218,17 @@ always @(posedge ILA_clk or negedge rstn)
     if (!rstn) IICshift <= 32'h00000000;
      else if (DevIIC == 2'b01) IICshift <= {IICshift[30:0],sccb_data_in_0};
 
-//----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
-   ila_0 Slow_Sign_ila (
-       .clk(ILA_clk), // input wire clk   
+////----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
+//   ila_0 Slow_Sign_ila (
+//       .clk(ILA_clk), // input wire clk   
 
-	.probe0(sccb_data_en_0), // input wire [0:0]  probe0  
-	.probe1(sccb_data_in_0), // input wire [0:0]  probe1 
-	.probe2(sccb_clk_en_0), // input wire [0:0]  probe2 
-	.probe3(sccb_clk_0), // input wire [0:0]  probe3 
-	.probe4(GPIO_0), // input wire [0:0]  probe4 
-	.probe5(IICshift) // input wire [31:0]  probe5
+//	.probe0(sccb_data_en_0), // input wire [0:0]  probe0  
+//	.probe1(sccb_data_in_0), // input wire [0:0]  probe1 
+//	.probe2(sccb_clk_en_0), // input wire [0:0]  probe2 
+//	.probe3(sccb_clk_0), // input wire [0:0]  probe3 
+//	.probe4(GPIO_0), // input wire [0:0]  probe4 
+//	.probe5(IICshift) // input wire [31:0]  probe5
    
-   );
+//   );
     
 endmodule

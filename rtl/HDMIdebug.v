@@ -32,6 +32,9 @@ output        Out_pVSync,
 output        Out_pHSync,
 output        Out_pVDE  ,
 
+output        Mem_Read,
+input  [11:0] Mem_Data,
+
 output [31:0] Deb_Vsync_counter,
 output [15:0] Deb_Hsync_counter,
 output [15:0] Deb_Line_counter 
@@ -44,6 +47,7 @@ reg        Reg_VSync;
 reg        Reg_HSync;
 reg        activeData;
 reg        Reg_pVDE;
+reg        Reg_MemRead;
 
 always @(posedge clk or negedge rstn) 
     if (!rstn) Vsync_counter <= 32'h00000000;
@@ -78,8 +82,15 @@ always @(posedge clk or negedge rstn)
     if (!rstn) Reg_pVDE <= 1'b0;
      else if (activeData && (Hsync_counter == 16'd143)) Reg_pVDE <= 1'b1;
      else if (activeData && (Hsync_counter == 16'd783)) Reg_pVDE <= 1'b0;
+always @(posedge clk or negedge rstn) 
+    if (!rstn) Reg_MemRead <= 1'b0;
+     else if (activeData && (Hsync_counter == 16'd142)) Reg_MemRead <= 1'b1;
+     else if (activeData && (Hsync_counter == 16'd782)) Reg_MemRead <= 1'b0;
+
+     
 //wire [15:0] BotLine = {8'h02,Switch};   
-wire [23:0] Static_Data = (!Reg_pVDE) ? 24'h000000 :
+wire [23:0] Static_Data = (!Reg_pVDE) ? 24'h000000 : 
+                          ((Line == 16'h8000 ) || (colom == 16'h8000)) ? {Mem_Data[11:8],4'h0,Mem_Data[7:4],4'h0,Mem_Data[3:0],4'h0} :
                           ((Line_counter == Line ) && (Hsync_counter == colom)) ? 24'hffffff :  24'hff0000;
 //                          ((Line_counter == 16'h0019) && (Hsync_counter == 16'd0260)) ? 24'hffffff :
 //                          ((Line_counter == 16'h0019) && (Hsync_counter == 16'd1539)) ? 24'hffffff :
@@ -94,6 +105,9 @@ assign Out_pData  =  Static_Data ;
 assign Out_pVSync =  Reg_VSync ;
 assign Out_pHSync =  Reg_HSync ;
 assign Out_pVDE   =  Reg_pVDE  ;
+
+//assign Mem_Read = Reg_MemRead;
+assign Mem_Read = Reg_pVDE;
 
 assign Deb_Vsync_counter = Vsync_counter;
 assign Deb_Hsync_counter = Hsync_counter;

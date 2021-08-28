@@ -43,8 +43,9 @@ output         Orjtuser ,
 output         Orjtlast ,
 output         Orjtvalid ,
 
-output [19:0] Time_tuser ,
+output [23:0] Time_tuser ,
 output [15:0] Time_tlast ,
+output [15:0] Num_valid,
 output [15:0] Line
     );
     
@@ -73,16 +74,21 @@ always @(posedge clk or negedge rstn)
     if (!rstn) Reg_tlast <= 1'b0;
      else if (Devtlast == 2'b01) Reg_tlast <= ~Reg_tlast;
 
-reg [19:0] Count_tuser;
+reg [23:0] Count_tuser;
 always @(posedge clk or negedge rstn)
-    if (!rstn) Count_tuser <= 20'h00000;
-     else if (Devtuser == 2'b01) Count_tuser <= 20'h00000;
+    if (!rstn) Count_tuser <= 24'h000000;
+     else if (Devtuser == 2'b01) Count_tuser <= 24'h000000;
      else Count_tuser <= Count_tuser + 1; 
 reg [15:0] Count_tlast;
 always @(posedge clk or negedge rstn)
     if (!rstn) Count_tlast <= 16'h0000;
      else if (Devtlast == 2'b01) Count_tlast <= 16'h0000;
      else Count_tlast <= Count_tlast + 1; 
+reg [15:0] Count_valid;
+always @(posedge clk or negedge rstn)
+    if (!rstn) Count_valid <= 16'h0000;
+     else if (Devtlast == 2'b01) Count_valid <= 16'h0000;
+     else if (s_axis_video_tvalid) Count_valid <= Count_valid + 1; 
 
 reg [15:0] Count_Line;
 always @(posedge clk or negedge rstn)
@@ -98,6 +104,7 @@ assign Orjtlast = s_axis_video_tlast ;
 assign Orjtvalid = s_axis_video_tvalid ; 
 assign Time_tuser = Count_tuser;
 assign Time_tlast = Count_tlast;
+assign Num_valid = Count_valid;
 assign Line = Count_Line;
 
 endmodule
