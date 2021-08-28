@@ -210,7 +210,7 @@ assign ja_p[1] = cam_iic_sda_io;
 reg [1:0] DevIIC;
 always @(posedge ILA_clk or negedge rstn)
     if (!rstn) DevIIC <= 2'b00;
-     else DevIIC <= {DevIIC[0],sccb_clk_0};
+     else DevIIC <= {DevIIC[0],cam_iic_scl_io};
 reg [31:0] IICshift;
 always @(posedge ILA_clk or negedge rstn)
     if (!rstn) IICshift <= 32'h00000000;

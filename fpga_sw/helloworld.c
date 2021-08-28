@@ -55,6 +55,9 @@ u32 *APB = XPAR_APB_M_0_BASEADDR;
 int writeSCCB (int WriteData);
 int write4readSCCB (int WriteData);
 int readSCCB (int WriteData);
+void Camera_init();
+void cfg_VGA_60fps();
+void cfg_advanced_awb();
 
 
 int main()
@@ -73,7 +76,7 @@ int main()
 	usleep(100);
 	APB[7] = 0x1;    	// Clear Camera reset
 	usleep(100);
-
+								// Read Camarea ID
 	write4readSCCB(0x78300a00);
 	Hdata = readSCCB(0x78300a00);
 	write4readSCCB(0x78300b00);
@@ -86,6 +89,34 @@ int main()
 		xil_printf("Camera ID incorrect :(:(  Read %x \n\r",CamID);
 	}
 
+	//[1]=0 System input clock from pad; Default read = 0x11
+	writeSCCB(0x78310311);
+	//[7]=1 Software reset; [6]=0 Software power down; Default=0x02
+	writeSCCB(0x78300882);
+
+	usleep(1000);
+
+	Camera_init();
+	//Stay in power down
+	usleep(1000);
+					///// set mode to 640x480
+    xil_printf("set mode to 640x480\n\r");
+	//[7]=0 Software reset; [6]=1 Software power down; Default=0x02
+	writeSCCB(0x78300842);
+
+	cfg_VGA_60fps();
+
+	//[7]=0 Software reset; [6]=0 Software power down; Default=0x02
+	writeSCCB(0x78300802);
+
+    				///// set awb to AWB_ADVANCED
+    xil_printf("set awb to AWB_ADVANCED\n\r");
+	writeSCCB(0x78300842);
+
+	cfg_advanced_awb();
+
+	//[7]=0 Software reset; [6]=0 Software power down; Default=0x02
+	writeSCCB(0x78300802);
 
     xil_printf("GoodBye World\n\r");
 
