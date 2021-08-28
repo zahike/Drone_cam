@@ -40,7 +40,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 
 # The design that will be created by this Tcl script contains the following 
 # module references:
-# HDMIdebug, clkDiv
+# HDMIdebug, SCCBGPIO_Top, clkDiv
 
 # Please add the sources of those modules before sourcing this Tcl script.
 
@@ -131,11 +131,13 @@ if { $bCheckIPs == 1 } {
    set list_check_ips "\ 
 digilentinc.com:ip:MIPI_CSI_2_RX:1.1\
 digilentinc.com:ip:MIPI_D_PHY_RX:1.3\
+xilinx.com:ip:axi_apb_bridge:3.0\
 xilinx.com:ip:clk_wiz:6.0\
 xilinx.com:ip:ila:6.2\
 xilinx.com:ip:processing_system7:5.5\
 digilentinc.com:ip:rgb2dvi:1.4\
 xilinx.com:ip:proc_sys_reset:5.0\
+xilinx.com:ip:system_ila:1.1\
 xilinx.com:ip:util_ds_buf:2.1\
 xilinx.com:ip:vio:3.0\
 xilinx.com:ip:xlconstant:1.1\
@@ -165,6 +167,7 @@ set bCheckModules 1
 if { $bCheckModules == 1 } {
    set list_check_mods "\ 
 HDMIdebug\
+SCCBGPIO_Top\
 clkDiv\
 "
 
@@ -228,6 +231,7 @@ proc create_root_design { parentCell } {
 
 
   # Create interface ports
+  set APB_M_0 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:apb_rtl:1.0 APB_M_0 ]
   set DDR [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:ddrx_rtl:1.0 DDR ]
   set FIXED_IO [ create_bd_intf_port -mode Master -vlnv xilinx.com:display_processing_system7:fixedio_rtl:1.0 FIXED_IO ]
   set GPIO_0_0 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:gpio_rtl:1.0 GPIO_0_0 ]
@@ -237,8 +241,9 @@ proc create_root_design { parentCell } {
   # Create ports
   set FCLK_CLK2_0 [ create_bd_port -dir O -type clk FCLK_CLK2_0 ]
   set_property -dict [ list \
-   CONFIG.FREQ_HZ {12500000} \
+   CONFIG.FREQ_HZ {1000000} \
  ] $FCLK_CLK2_0
+  set GPIO_0 [ create_bd_port -dir O GPIO_0 ]
   set Out_pHSync [ create_bd_port -dir O Out_pHSync ]
   set Out_pVDE [ create_bd_port -dir O Out_pVDE ]
   set Out_pVSync [ create_bd_port -dir O Out_pVSync ]
@@ -254,6 +259,12 @@ proc create_root_design { parentCell } {
   set dphy_data_hs_p [ create_bd_port -dir I -from 1 -to 0 dphy_data_hs_p ]
   set dphy_data_lp_n [ create_bd_port -dir I -from 1 -to 0 dphy_data_lp_n ]
   set dphy_data_lp_p [ create_bd_port -dir I -from 1 -to 0 dphy_data_lp_p ]
+  set rstn [ create_bd_port -dir O -from 0 -to 0 -type rst rstn ]
+  set sccb_clk_0 [ create_bd_port -dir O -type clk sccb_clk_0 ]
+  set sccb_clk_en_0 [ create_bd_port -dir O sccb_clk_en_0 ]
+  set sccb_data_en_0 [ create_bd_port -dir O sccb_data_en_0 ]
+  set sccb_data_in_0 [ create_bd_port -dir I sccb_data_in_0 ]
+  set sccb_data_out_0 [ create_bd_port -dir O sccb_data_out_0 ]
 
   # Create instance: HDMIdebug_0, and set properties
   set block_name HDMIdebug
@@ -279,6 +290,23 @@ proc create_root_design { parentCell } {
    CONFIG.kGenerateAXIL {true} \
    CONFIG.kLPFromLane0 {false} \
  ] $MIPI_D_PHY_RX_0
+
+  # Create instance: SCCBGPIO_Top_0, and set properties
+  set block_name SCCBGPIO_Top
+  set block_cell_name SCCBGPIO_Top_0
+  if { [catch {set SCCBGPIO_Top_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $SCCBGPIO_Top_0 eq "" } {
+     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+  
+  # Create instance: axi_apb_bridge_0, and set properties
+  set axi_apb_bridge_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_apb_bridge:3.0 axi_apb_bridge_0 ]
+  set_property -dict [ list \
+   CONFIG.C_APB_NUM_SLAVES {1} \
+ ] $axi_apb_bridge_0
 
   # Create instance: clkDiv_0, and set properties
   set block_name clkDiv
@@ -347,6 +375,17 @@ proc create_root_design { parentCell } {
    CONFIG.C_SLOT_0_AXI_PROTOCOL {AXI4S} \
  ] $ila_1
 
+  # Create instance: ila_2, and set properties
+  set ila_2 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ila:6.2 ila_2 ]
+  set_property -dict [ list \
+   CONFIG.C_ENABLE_ILA_AXI_MON {false} \
+   CONFIG.C_MONITOR_TYPE {Native} \
+   CONFIG.C_NUM_OF_PROBES {9} \
+   CONFIG.C_PROBE0_WIDTH {32} \
+   CONFIG.C_PROBE2_WIDTH {32} \
+   CONFIG.C_PROBE6_WIDTH {32} \
+ ] $ila_2
+
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
   set_property -dict [ list \
@@ -357,7 +396,7 @@ proc create_root_design { parentCell } {
    CONFIG.PCW_ACT_ENET1_PERIPHERAL_FREQMHZ {10.000000} \
    CONFIG.PCW_ACT_FPGA0_PERIPHERAL_FREQMHZ {100.000000} \
    CONFIG.PCW_ACT_FPGA1_PERIPHERAL_FREQMHZ {125.000000} \
-   CONFIG.PCW_ACT_FPGA2_PERIPHERAL_FREQMHZ {12.500000} \
+   CONFIG.PCW_ACT_FPGA2_PERIPHERAL_FREQMHZ {1.000000} \
    CONFIG.PCW_ACT_FPGA3_PERIPHERAL_FREQMHZ {10.000000} \
    CONFIG.PCW_ACT_PCAP_PERIPHERAL_FREQMHZ {200.000000} \
    CONFIG.PCW_ACT_QSPI_PERIPHERAL_FREQMHZ {200.000000} \
@@ -380,7 +419,7 @@ proc create_root_design { parentCell } {
    CONFIG.PCW_CAN_PERIPHERAL_DIVISOR1 {1} \
    CONFIG.PCW_CLK0_FREQ {100000000} \
    CONFIG.PCW_CLK1_FREQ {125000000} \
-   CONFIG.PCW_CLK2_FREQ {12500000} \
+   CONFIG.PCW_CLK2_FREQ {1000000} \
    CONFIG.PCW_CLK3_FREQ {10000000} \
    CONFIG.PCW_CPU_CPU_6X4X_MAX_RANGE {667} \
    CONFIG.PCW_CPU_CPU_PLL_FREQMHZ {1333.333} \
@@ -439,15 +478,15 @@ proc create_root_design { parentCell } {
    CONFIG.PCW_FCLK0_PERIPHERAL_DIVISOR1 {2} \
    CONFIG.PCW_FCLK1_PERIPHERAL_DIVISOR0 {4} \
    CONFIG.PCW_FCLK1_PERIPHERAL_DIVISOR1 {2} \
-   CONFIG.PCW_FCLK2_PERIPHERAL_DIVISOR0 {10} \
-   CONFIG.PCW_FCLK2_PERIPHERAL_DIVISOR1 {8} \
+   CONFIG.PCW_FCLK2_PERIPHERAL_DIVISOR0 {40} \
+   CONFIG.PCW_FCLK2_PERIPHERAL_DIVISOR1 {25} \
    CONFIG.PCW_FCLK3_PERIPHERAL_DIVISOR0 {1} \
    CONFIG.PCW_FCLK3_PERIPHERAL_DIVISOR1 {1} \
    CONFIG.PCW_FCLK_CLK1_BUF {FALSE} \
    CONFIG.PCW_FCLK_CLK2_BUF {FALSE} \
    CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {100} \
    CONFIG.PCW_FPGA1_PERIPHERAL_FREQMHZ {125} \
-   CONFIG.PCW_FPGA2_PERIPHERAL_FREQMHZ {12.5} \
+   CONFIG.PCW_FPGA2_PERIPHERAL_FREQMHZ {1} \
    CONFIG.PCW_FPGA_FCLK0_ENABLE {1} \
    CONFIG.PCW_FPGA_FCLK1_ENABLE {1} \
    CONFIG.PCW_FPGA_FCLK2_ENABLE {1} \
@@ -844,7 +883,7 @@ proc create_root_design { parentCell } {
   # Create instance: ps7_0_axi_periph, and set properties
   set ps7_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 ps7_0_axi_periph ]
   set_property -dict [ list \
-   CONFIG.NUM_MI {2} \
+   CONFIG.NUM_MI {3} \
  ] $ps7_0_axi_periph
 
   # Create instance: rgb2dvi_0, and set properties
@@ -856,6 +895,9 @@ proc create_root_design { parentCell } {
 
   # Create instance: rst_ps7_0_100M, and set properties
   set rst_ps7_0_100M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_ps7_0_100M ]
+
+  # Create instance: system_ila_0, and set properties
+  set system_ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:system_ila:1.1 system_ila_0 ]
 
   # Create instance: util_ds_buf_0, and set properties
   set util_ds_buf_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 util_ds_buf_0 ]
@@ -880,14 +922,18 @@ proc create_root_design { parentCell } {
 
   # Create interface connections
   connect_bd_intf_net -intf_net MIPI_D_PHY_RX_0_D_PHY_PPI [get_bd_intf_pins MIPI_CSI_2_RX_0/rx_mipi_ppi] [get_bd_intf_pins MIPI_D_PHY_RX_0/D_PHY_PPI]
+  connect_bd_intf_net -intf_net axi_apb_bridge_0_APB_M [get_bd_intf_ports APB_M_0] [get_bd_intf_pins axi_apb_bridge_0/APB_M]
   connect_bd_intf_net -intf_net dphy_hs_clock_0_1 [get_bd_intf_ports dphy_hs_clock] [get_bd_intf_pins MIPI_D_PHY_RX_0/dphy_hs_clock]
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
   connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins processing_system7_0/FIXED_IO]
-  connect_bd_intf_net -intf_net processing_system7_0_GPIO_0 [get_bd_intf_ports GPIO_0_0] [get_bd_intf_pins processing_system7_0/GPIO_0]
-  connect_bd_intf_net -intf_net processing_system7_0_IIC_0 [get_bd_intf_ports IIC_0_0] [get_bd_intf_pins processing_system7_0/IIC_0]
   connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins processing_system7_0/M_AXI_GP0] [get_bd_intf_pins ps7_0_axi_periph/S00_AXI]
+connect_bd_intf_net -intf_net [get_bd_intf_nets processing_system7_0_M_AXI_GP0] [get_bd_intf_pins processing_system7_0/M_AXI_GP0] [get_bd_intf_pins system_ila_0/SLOT_0_AXI]
+  set_property -dict [ list \
+HDL_ATTRIBUTE.DEBUG {true} \
+ ] [get_bd_intf_nets processing_system7_0_M_AXI_GP0]
   connect_bd_intf_net -intf_net ps7_0_axi_periph_M00_AXI [get_bd_intf_pins MIPI_D_PHY_RX_0/S_AXI_LITE] [get_bd_intf_pins ps7_0_axi_periph/M00_AXI]
   connect_bd_intf_net -intf_net ps7_0_axi_periph_M01_AXI [get_bd_intf_pins MIPI_CSI_2_RX_0/S_AXI_LITE] [get_bd_intf_pins ps7_0_axi_periph/M01_AXI]
+  connect_bd_intf_net -intf_net ps7_0_axi_periph_M02_AXI [get_bd_intf_pins axi_apb_bridge_0/AXI4_LITE] [get_bd_intf_pins ps7_0_axi_periph/M02_AXI]
 
   # Create port connections
   connect_bd_net -net HDMIdebug_0_Deb_Hsync_counter [get_bd_pins HDMIdebug_0/Deb_Hsync_counter] [get_bd_pins ila_0/probe5]
@@ -902,6 +948,19 @@ proc create_root_design { parentCell } {
   connect_bd_net -net MIPI_CSI_2_RX_0_m_axis_video_tuser [get_bd_pins MIPI_CSI_2_RX_0/m_axis_video_tuser] [get_bd_pins ila_1/probe2]
   connect_bd_net -net MIPI_CSI_2_RX_0_m_axis_video_tvalid [get_bd_pins MIPI_CSI_2_RX_0/m_axis_video_tvalid] [get_bd_pins ila_1/probe3]
   connect_bd_net -net MIPI_D_PHY_RX_0_RxByteClkHS [get_bd_pins MIPI_CSI_2_RX_0/RxByteClkHS] [get_bd_pins MIPI_D_PHY_RX_0/RxByteClkHS] [get_bd_pins util_ds_buf_0/BUFG_I]
+  connect_bd_net -net SCCBGPIO_Top_0_GPIO [get_bd_ports GPIO_0] [get_bd_pins SCCBGPIO_Top_0/GPIO] [get_bd_pins ila_2/probe8]
+  connect_bd_net -net SCCBGPIO_Top_0_S_APB_0_prdata [get_bd_pins SCCBGPIO_Top_0/S_APB_0_prdata] [get_bd_pins axi_apb_bridge_0/m_apb_prdata] [get_bd_pins ila_2/probe2]
+  connect_bd_net -net SCCBGPIO_Top_0_S_APB_0_pready [get_bd_pins SCCBGPIO_Top_0/S_APB_0_pready] [get_bd_pins axi_apb_bridge_0/m_apb_pready] [get_bd_pins ila_2/probe3]
+  connect_bd_net -net SCCBGPIO_Top_0_S_APB_0_pslverr [get_bd_pins SCCBGPIO_Top_0/S_APB_0_pslverr] [get_bd_pins axi_apb_bridge_0/m_apb_pslverr] [get_bd_pins ila_2/probe5]
+  connect_bd_net -net SCCBGPIO_Top_0_sccb_clk [get_bd_ports sccb_clk_0] [get_bd_pins SCCBGPIO_Top_0/sccb_clk]
+  connect_bd_net -net SCCBGPIO_Top_0_sccb_clk_en [get_bd_ports sccb_clk_en_0] [get_bd_pins SCCBGPIO_Top_0/sccb_clk_en]
+  connect_bd_net -net SCCBGPIO_Top_0_sccb_data_en [get_bd_ports sccb_data_en_0] [get_bd_pins SCCBGPIO_Top_0/sccb_data_en]
+  connect_bd_net -net SCCBGPIO_Top_0_sccb_data_out [get_bd_ports sccb_data_out_0] [get_bd_pins SCCBGPIO_Top_0/sccb_data_out]
+  connect_bd_net -net axi_apb_bridge_0_m_apb_paddr [get_bd_pins SCCBGPIO_Top_0/S_APB_0_paddr] [get_bd_pins axi_apb_bridge_0/m_apb_paddr] [get_bd_pins ila_2/probe0]
+  connect_bd_net -net axi_apb_bridge_0_m_apb_penable [get_bd_pins SCCBGPIO_Top_0/S_APB_0_penable] [get_bd_pins axi_apb_bridge_0/m_apb_penable] [get_bd_pins ila_2/probe1]
+  connect_bd_net -net axi_apb_bridge_0_m_apb_psel [get_bd_pins SCCBGPIO_Top_0/S_APB_0_psel] [get_bd_pins axi_apb_bridge_0/m_apb_psel] [get_bd_pins ila_2/probe4]
+  connect_bd_net -net axi_apb_bridge_0_m_apb_pwdata [get_bd_pins SCCBGPIO_Top_0/S_APB_0_pwdata] [get_bd_pins axi_apb_bridge_0/m_apb_pwdata] [get_bd_pins ila_2/probe6]
+  connect_bd_net -net axi_apb_bridge_0_m_apb_pwrite [get_bd_pins SCCBGPIO_Top_0/S_APB_0_pwrite] [get_bd_pins axi_apb_bridge_0/m_apb_pwrite] [get_bd_pins ila_2/probe7]
   connect_bd_net -net clkDiv_0_PixelClk [get_bd_ports PixelClk] [get_bd_pins HDMIdebug_0/clk] [get_bd_pins clkDiv_0/PixelClk] [get_bd_pins rgb2dvi_0/PixelClk] [get_bd_pins vio_0/clk]
   connect_bd_net -net clkDiv_0_SerilsClk [get_bd_pins clkDiv_0/SerilsClk] [get_bd_pins ila_0/clk] [get_bd_pins rgb2dvi_0/SerialClk]
   connect_bd_net -net clk_wiz_0_clk_out2 [get_bd_pins MIPI_CSI_2_RX_0/video_aclk] [get_bd_pins clk_wiz_0/clk_out2] [get_bd_pins ila_1/clk]
@@ -913,7 +972,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net dphy_data_hs_p_0_1 [get_bd_ports dphy_data_hs_p] [get_bd_pins MIPI_D_PHY_RX_0/dphy_data_hs_p]
   connect_bd_net -net dphy_data_lp_n_0_1 [get_bd_ports dphy_data_lp_n] [get_bd_pins MIPI_D_PHY_RX_0/dphy_data_lp_n]
   connect_bd_net -net dphy_data_lp_p_0_1 [get_bd_ports dphy_data_lp_p] [get_bd_pins MIPI_D_PHY_RX_0/dphy_data_lp_p]
-  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins MIPI_CSI_2_RX_0/s_axi_lite_aclk] [get_bd_pins MIPI_D_PHY_RX_0/s_axi_lite_aclk] [get_bd_pins clk_wiz_0/clk_out1] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins ps7_0_axi_periph/ACLK] [get_bd_pins ps7_0_axi_periph/M00_ACLK] [get_bd_pins ps7_0_axi_periph/M01_ACLK] [get_bd_pins ps7_0_axi_periph/S00_ACLK] [get_bd_pins rst_ps7_0_100M/slowest_sync_clk]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins MIPI_CSI_2_RX_0/s_axi_lite_aclk] [get_bd_pins MIPI_D_PHY_RX_0/s_axi_lite_aclk] [get_bd_pins SCCBGPIO_Top_0/clk] [get_bd_pins axi_apb_bridge_0/s_axi_aclk] [get_bd_pins clk_wiz_0/clk_out1] [get_bd_pins ila_2/clk] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins ps7_0_axi_periph/ACLK] [get_bd_pins ps7_0_axi_periph/M00_ACLK] [get_bd_pins ps7_0_axi_periph/M01_ACLK] [get_bd_pins ps7_0_axi_periph/M02_ACLK] [get_bd_pins ps7_0_axi_periph/S00_ACLK] [get_bd_pins rst_ps7_0_100M/slowest_sync_clk] [get_bd_pins system_ila_0/clk]
   connect_bd_net -net processing_system7_0_FCLK_CLK1 [get_bd_pins clk_wiz_0/clk_in1] [get_bd_pins processing_system7_0/FCLK_CLK0]
   connect_bd_net -net processing_system7_0_FCLK_CLK2 [get_bd_pins clkDiv_0/clk125] [get_bd_pins processing_system7_0/FCLK_CLK1]
   connect_bd_net -net processing_system7_0_FCLK_CLK3 [get_bd_ports FCLK_CLK2_0] [get_bd_pins processing_system7_0/FCLK_CLK2]
@@ -923,14 +982,16 @@ proc create_root_design { parentCell } {
   connect_bd_net -net rgb2dvi_0_TMDS_Data_n [get_bd_ports TMDS_Data_n_0] [get_bd_pins rgb2dvi_0/TMDS_Data_n]
   connect_bd_net -net rgb2dvi_0_TMDS_Data_p [get_bd_ports TMDS_Data_p_0] [get_bd_pins rgb2dvi_0/TMDS_Data_p]
   connect_bd_net -net rst_ps7_0_100M_interconnect_aresetn [get_bd_pins ps7_0_axi_periph/ARESETN] [get_bd_pins rst_ps7_0_100M/interconnect_aresetn]
-  connect_bd_net -net rst_ps7_0_100M_peripheral_aresetn [get_bd_pins HDMIdebug_0/rstn] [get_bd_pins MIPI_CSI_2_RX_0/s_axi_lite_aresetn] [get_bd_pins MIPI_D_PHY_RX_0/s_axi_lite_aresetn] [get_bd_pins clkDiv_0/rstn] [get_bd_pins ps7_0_axi_periph/M00_ARESETN] [get_bd_pins ps7_0_axi_periph/M01_ARESETN] [get_bd_pins ps7_0_axi_periph/S00_ARESETN] [get_bd_pins rgb2dvi_0/aRst_n] [get_bd_pins rst_ps7_0_100M/peripheral_aresetn]
+  connect_bd_net -net rst_ps7_0_100M_peripheral_aresetn [get_bd_ports rstn] [get_bd_pins HDMIdebug_0/rstn] [get_bd_pins MIPI_CSI_2_RX_0/s_axi_lite_aresetn] [get_bd_pins MIPI_D_PHY_RX_0/s_axi_lite_aresetn] [get_bd_pins SCCBGPIO_Top_0/rstn] [get_bd_pins axi_apb_bridge_0/s_axi_aresetn] [get_bd_pins clkDiv_0/rstn] [get_bd_pins ps7_0_axi_periph/M00_ARESETN] [get_bd_pins ps7_0_axi_periph/M01_ARESETN] [get_bd_pins ps7_0_axi_periph/M02_ARESETN] [get_bd_pins ps7_0_axi_periph/S00_ARESETN] [get_bd_pins rgb2dvi_0/aRst_n] [get_bd_pins rst_ps7_0_100M/peripheral_aresetn] [get_bd_pins system_ila_0/resetn]
   connect_bd_net -net rst_ps7_0_100M_peripheral_reset [get_bd_pins MIPI_D_PHY_RX_0/aRst] [get_bd_pins rst_ps7_0_100M/peripheral_reset]
+  connect_bd_net -net sccb_data_in_0_1 [get_bd_ports sccb_data_in_0] [get_bd_pins SCCBGPIO_Top_0/sccb_data_in]
   connect_bd_net -net util_ds_buf_0_BUFG_O [get_bd_ports RxByteClkHS] [get_bd_pins util_ds_buf_0/BUFG_O]
   connect_bd_net -net vio_0_probe_out0 [get_bd_pins HDMIdebug_0/colom] [get_bd_pins vio_0/probe_out0]
   connect_bd_net -net vio_0_probe_out1 [get_bd_pins HDMIdebug_0/Line] [get_bd_pins vio_0/probe_out1]
   connect_bd_net -net xlconstant_0_dout [get_bd_pins MIPI_CSI_2_RX_0/m_axis_video_tready] [get_bd_pins xlconstant_0/dout]
 
   # Create address segments
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C20000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs APB_M_0/Reg] SEG_APB_M_0_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0x43C10000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs MIPI_CSI_2_RX_0/S_AXI_LITE/S_AXI_LITE_reg] SEG_MIPI_CSI_2_RX_0_S_AXI_LITE_reg
   create_bd_addr_seg -range 0x00010000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs MIPI_D_PHY_RX_0/S_AXI_LITE/S_AXI_LITE_reg] SEG_MIPI_D_PHY_RX_0_S_AXI_LITE_reg
 
