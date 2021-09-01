@@ -150,7 +150,7 @@ Drone_Cam_BD Drone_Cam_BD_inst
  .TMDS_Clk_p_0 (hdmi_tx_clk_p ),
  .TMDS_Data_n_0(hdmi_tx_data_n),
  .TMDS_Data_p_0(hdmi_tx_data_p),
-// .sys_clock    (sys_clock),
+ .sys_clock    (sys_clock),
 .tlast(jb_p[3]),  //output tlast;
 .tuser(jb_n[3]),  //output tuser;
  .Out_pHSync(jb_n[1]),

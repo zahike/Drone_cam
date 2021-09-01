@@ -43,8 +43,8 @@ output         Orjtuser ,
 output         Orjtlast ,
 output         Orjtvalid ,
 
-output [23:0] Time_tuser ,
-output [15:0] Time_tlast ,
+output [23:0] tuser_count ,
+output [15:0] tlast_count ,
 output [15:0] Num_valid,
 output [15:0] Line
     );
@@ -102,8 +102,8 @@ assign tlast = Reg_tlast;
 assign Orjtuser = s_axis_video_tuser ; 
 assign Orjtlast = s_axis_video_tlast ; 
 assign Orjtvalid = s_axis_video_tvalid ; 
-assign Time_tuser = Count_tuser;
-assign Time_tlast = Count_tlast;
+assign tuser_count = Count_tuser;
+assign tlast_count = Count_tlast;
 assign Num_valid = Count_valid;
 assign Line = Count_Line;
 

@@ -63,7 +63,8 @@ void cfg_VGA_60fps ()
 		writeSCCB(0x78380d8E); //, 1422 & 0xFF);
 		//VTS frame exposure time in # lines
 		writeSCCB(0x78380e02); //, (656 >> 8) & 0xFF); 0x290
-		writeSCCB(0x78380f90); //, 656 & 0xFF);
+//		writeSCCB(0x78380f90); //, 656 & 0xFF);
+		writeSCCB(0x78380f95); //, 656 & 0xFF);
 
 		//[7:4]=0x3 horizontal odd subsample increment, [3:0]=0x1 horizontal even subsample increment
 		writeSCCB(0x78381431);

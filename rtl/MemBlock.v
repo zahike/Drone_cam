@@ -48,10 +48,10 @@ reg [11:0] DelValid;
 always @(posedge Cclk or negedge rstn)
     if (!rstn) DelValid <= 1'b0;
      else DelValid <= s_axis_video_tvalid;
-reg [11:0] DelData;
+reg [8:0] DelData;
 always @(posedge Cclk or negedge rstn)
-    if (!rstn) DelData <= 12'h000;
-     else if (s_axis_video_tvalid) DelData <= {s_axis_video_tdata[23:20],s_axis_video_tdata[15:12],s_axis_video_tdata[7:4]};     
+    if (!rstn) DelData <= 9'h000;
+     else if (s_axis_video_tvalid) DelData <= {s_axis_video_tdata[23:21],s_axis_video_tdata[15:13],s_axis_video_tdata[7:5]};     
 
 reg [19:0] HRadd;
 always @(posedge Hclk or negedge rstn)
@@ -60,15 +60,15 @@ always @(posedge Hclk or negedge rstn)
      else if (HMemRead) HRadd <= HRadd + 1;
 
 /////// Memory //////
-reg [11:0] Mem [0:307199];
-reg [11:0] Reg_mem;
+reg [8:0] Mem [0:307199];
+reg [8:0] Reg_mem;
 always @(posedge Cclk)
     if (DelValid) Mem[CWadd] <= DelData;
 
 always @(posedge Hclk)
     Reg_mem <=  Mem[HRadd];
 
-assign HDMIdata = Reg_mem;
+assign HDMIdata = {Reg_mem[8:6],1'b1,Reg_mem[5:3],1'b1,Reg_mem[2:0],1'b1};
 
 assign s_axis_video_tready = 1'b1;   
     
