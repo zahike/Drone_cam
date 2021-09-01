@@ -90,7 +90,7 @@ always @(posedge clk or negedge rstn)
      
 //wire [15:0] BotLine = {8'h02,Switch};   
 wire [23:0] Static_Data = (!Reg_pVDE) ? 24'h000000 : 
-                          ((Line == 16'h8000 ) || (colom == 16'h8000)) ? {Mem_Data[11:8],4'h0,Mem_Data[7:4],4'h0,Mem_Data[3:0],4'h0} :
+                          ((Line[15:12] == 4'h8 ) || (colom[15:12] == 4'h8)) ? {Mem_Data[11:8],colom[3:0],Mem_Data[7:4],colom[3:0],Mem_Data[3:0],colom[3:0]} :
                           ((Line_counter == Line ) && (Hsync_counter == colom)) ? 24'hffffff :  24'hff0000;
 //                          ((Line_counter == 16'h0019) && (Hsync_counter == 16'd0260)) ? 24'hffffff :
 //                          ((Line_counter == 16'h0019) && (Hsync_counter == 16'd1539)) ? 24'hffffff :

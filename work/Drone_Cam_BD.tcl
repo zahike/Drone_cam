@@ -396,6 +396,7 @@ proc create_root_design { parentCell } {
   # Create instance: ila_0, and set properties
   set ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ila:6.2 ila_0 ]
   set_property -dict [ list \
+   CONFIG.C_DATA_DEPTH {4096} \
    CONFIG.C_ENABLE_ILA_AXI_MON {false} \
    CONFIG.C_MONITOR_TYPE {Native} \
    CONFIG.C_NUM_OF_PROBES {13} \
