@@ -968,6 +968,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net HDMIdebug_0_Deb_Line_counter [get_bd_pins HDMIdebug_0/Deb_Line_counter] [get_bd_pins ila_0/probe12]
   connect_bd_net -net HDMIdebug_0_Deb_Vsync_counter [get_bd_pins HDMIdebug_0/Deb_Vsync_counter] [get_bd_pins ila_0/probe10]
   connect_bd_net -net HDMIdebug_0_Mem_Read [get_bd_pins HDMIdebug_0/Mem_Read] [get_bd_pins MemBlock_0/HMemRead]
+  connect_bd_net -net HDMIdebug_0_Mem_Read_Add [get_bd_pins HDMIdebug_0/Mem_Read_Add] [get_bd_pins MemBlock_0/Mem_Read_Add]
   connect_bd_net -net HDMIdebug_0_Out_pData [get_bd_pins HDMIdebug_0/Out_pData] [get_bd_pins rgb2dvi_0/vid_pData]
   connect_bd_net -net HDMIdebug_0_Out_pHSync [get_bd_ports Out_pHSync] [get_bd_pins HDMIdebug_0/Out_pHSync] [get_bd_pins ila_0/probe8] [get_bd_pins rgb2dvi_0/vid_pVSync]
   connect_bd_net -net HDMIdebug_0_Out_pVDE [get_bd_ports Out_pVDE] [get_bd_pins HDMIdebug_0/Out_pVDE] [get_bd_pins ila_0/probe9] [get_bd_pins rgb2dvi_0/vid_pVDE]
