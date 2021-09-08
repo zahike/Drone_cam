@@ -54,7 +54,8 @@ reg        Reg_MemRead;
 /////////////// HDMI control Signals //////////////////
 ///////////////////////////////////////////////////////
 always @(posedge clk or negedge rstn) 
-    if (!rstn) Vsync_counter <= 32'h00000000;
+//    if (!rstn) Vsync_counter <= 32'h00000000;
+    if (!rstn) Vsync_counter <= 32'd419999;
      else if (Vsync_counter == 32'd419999) Vsync_counter <= 32'h00000000;
      else Vsync_counter <= Vsync_counter + 1;
 always @(posedge clk or negedge rstn) 
@@ -63,7 +64,8 @@ always @(posedge clk or negedge rstn)
      else if (Vsync_counter == 32'd1599) Reg_VSync <= 1'b1;
 	 
 always @(posedge clk or negedge rstn) 
-    if (!rstn) Hsync_counter <= 16'h0000;
+//    if (!rstn) Hsync_counter <= 16'h0000;
+    if (!rstn) Hsync_counter <= 16'd799;
      else if (Vsync_counter == 32'd419999) Hsync_counter <= 16'h0000;
      else if (Hsync_counter == 16'd799) Hsync_counter <= 16'h0000;
      else Hsync_counter <= Hsync_counter + 1;

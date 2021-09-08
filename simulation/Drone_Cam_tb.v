@@ -41,11 +41,11 @@ reg        m_axis_video_tvalid;   // input         s_axis_video_tvalid,
 reg        m_axis_video_tuser ;   // input         s_axis_video_tuser , 
 reg        m_axis_video_tlast ;   // input         s_axis_video_tlast , 
 
-reg [2:0] data;
+reg [3:0] data;
 always @(posedge clk or negedge rstn)
-    if (!rstn) data <= 8'h00;
+    if (!rstn) data <= 4'h0;
      else if (m_axis_video_tvalid) data <= data + 1;
-assign m_axis_video_tdata = {2'b00,data,5'b00000,2'b00,data,5'b00000,2'b00,data,5'b00000,2'b00};      
+assign m_axis_video_tdata = {2'b00,data,4'h0,2'b00,data,4'h0,2'b00,data,4'h0,2'b00};      
 initial begin 
 //m_axis_video_tdata  = 0;   // input  [23:0] s_axis_video_tdata , 
 m_axis_video_tvalid = 0;   // input         s_axis_video_tvalid, 
@@ -156,6 +156,7 @@ wire [15 : 0] Line;
 wire HVsync                     ;                        // input HVsync,                      
 wire HMemRead                   ;                      // input HMemRead,                    
 wire  [11:0] HDMIdata           ;   // output [11:0] HDMIdata             
+wire  [11:0] HDMIdata_Slant     ;   // output [11:0] HDMIdata             
 
   GammDebug GammDebug_inst (
     .clk(clk),
@@ -199,7 +200,25 @@ MemBlock MemBlock_inst(
 .HMemRead           (HMemRead           ),       // input HMemRead,         
 .Mem_Read_Add       (Mem_Read_Add       ),       //output [18:0] Mem_Read_Add ,           
 .HDMIdata           (HDMIdata           )        // output [11:0] HDMIdata             
+    );
 
+SlantMem SlantMem_inst(
+.Cclk               (clk),                       // input Cclk,                        
+.rstn               (rstn),                      // input rstn,                        
+
+.Mem_cont           (4'hf),
+.s_axis_video_tready(mg_axis_video_tready),       // output        s_axis_video_tready, 
+.s_axis_video_tdata (mg_axis_video_tdata ),       // input  [23:0] s_axis_video_tdata , 
+.s_axis_video_tvalid(mg_axis_video_tvalid),       // input         s_axis_video_tvalid, 
+.s_axis_video_tuser (mg_axis_video_tuser ),       // input         s_axis_video_tuser , 
+.s_axis_video_tlast (mg_axis_video_tlast ),       // input         s_axis_video_tlast , 
+
+.Hclk               (PixelClk           ),       // input Hclk,                        
+
+.HVsync             (HVsync             ),       // input HVsync,                      
+.HMemRead           (HMemRead           ),       // input HMemRead,         
+//.Mem_Read_Add       (Mem_Read_Add       ),       //output [18:0] Mem_Read_Add ,           
+.HDMIdata           (HDMIdata_Slant           )        // output [11:0] HDMIdata             
     );
 
 wire [23 : 0] Out_pData;

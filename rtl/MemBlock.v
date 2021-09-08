@@ -37,21 +37,20 @@ input HMemRead,
 input [18:0] Mem_Read_Add ,
 
 output [11:0] HDMIdata
-
     );
-reg Del_Frame;
-always @(posedge Cclk or negedge rstn)
-    if (!rstn) Del_Frame <= 1'b0;
-     else if (s_axis_video_tuser && s_axis_video_tvalid) Del_Frame <= 1'b1;
-     else Del_Frame <= 1'b0;  
+//reg Del_Frame;
+//always @(posedge Cclk or negedge rstn)
+//    if (!rstn) Del_Frame <= 1'b0;
+//     else if (s_axis_video_tuser && s_axis_video_tvalid) Del_Frame <= 1'b1;
+//     else Del_Frame <= 1'b0;  
 reg Del_Last;
 always @(posedge Cclk or negedge rstn)
     if (!rstn) Del_Last <= 1'b0;
      else Del_Last <= s_axis_video_tlast;
-reg Frame_odd;
-always @(posedge Cclk or negedge rstn)
-    if (!rstn) Frame_odd <= 1'b0;
-     else if (Del_Frame) Frame_odd <= ~Frame_odd;
+//reg Frame_odd;
+//always @(posedge Cclk or negedge rstn)
+//    if (!rstn) Frame_odd <= 1'b0;
+//     else if (Del_Frame) Frame_odd <= ~Frame_odd;
 reg Line_odd;
 always @(posedge Cclk or negedge rstn)
     if (!rstn) Line_odd <= 1'b0;
@@ -74,10 +73,12 @@ reg DelValid;
 always @(posedge Cclk or negedge rstn)
     if (!rstn) DelValid <= 1'b0;
      else DelValid <= s_axis_video_tvalid;
-reg [11:0] DelData;
+//reg [11:0] DelData;
+reg [8:0] DelData;
 always @(posedge Cclk or negedge rstn)
     if (!rstn) DelData <= 12'h000;
-     else if (s_axis_video_tvalid) DelData <= {s_axis_video_tdata[23:20],s_axis_video_tdata[15:12],s_axis_video_tdata[7:4]};     
+//     else if (s_axis_video_tvalid) DelData <= {s_axis_video_tdata[23:20],s_axis_video_tdata[15:12],s_axis_video_tdata[7:4]};     
+     else if (s_axis_video_tvalid) DelData <= {s_axis_video_tdata[23:21],s_axis_video_tdata[15:13],s_axis_video_tdata[7:5]};     
 
 reg [19:0] HRadd;
 always @(posedge Hclk or negedge rstn)
@@ -87,17 +88,20 @@ always @(posedge Hclk or negedge rstn)
 
 /////// Memory //////
 //reg [8:0] Mem [0:307199];
-reg [11:0] Mem [0:153599];
-reg [11:0] Reg_mem;
+//reg [11:0] Mem [0:153599];
+reg [8:0] Mem [0:153599];
+reg [8:0] Reg_mem;
 always @(posedge Cclk)
     if (DelValid && Valid_odd) Mem[CWadd] <= DelData;
 
 always @(posedge Hclk)
     Reg_mem <=  Mem[Mem_Read_Add];
 
-//assign HDMIdata = {Reg_mem[8:6],1'b1,Reg_mem[5:3],1'b1,Reg_mem[2:0],1'b1};
-assign HDMIdata = Reg_mem;
+//assign HDMIdata = Reg_mem;
+assign HDMIdata = {Reg_mem[8:6],1'b1,Reg_mem[5:3],1'b1,Reg_mem[2:0],1'b1};
 
-assign s_axis_video_tready = 1'b1;   
+
+assign s_axis_video_tready = 1'b1;
+
     
 endmodule
