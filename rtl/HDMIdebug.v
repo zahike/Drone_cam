@@ -32,6 +32,7 @@ output        Out_pVSync,
 output        Out_pHSync,
 output        Out_pVDE  ,
 
+input         FraimSync,
 output        Mem_Read,
 output [18:0] Mem_Read_Add ,
 input  [11:0] Mem_Data,
@@ -109,7 +110,8 @@ always @(posedge clk or negedge rstn)
 reg Line_odd;
 always @(posedge clk or negedge rstn)
     if (!rstn) Line_odd <= 1'b0;
-     else if (Vsync_counter == 32'd419999) Line_odd <= ~Line_odd;    
+//     else if (Vsync_counter == 32'd419999) Line_odd <= ~Line_odd;    
+     else if (Vsync_counter == 32'h00000000) Line_odd <= FraimSync;    
      else if ((Hsync_counter == 16'd783) && activeData) Line_odd <= ~Line_odd;    
      
 //wire [15:0] BotLine = {8'h02,Switch};   
@@ -133,7 +135,7 @@ assign Out_pVDE   =  Reg_pVDE  ;
 
 //assign Mem_Read = Reg_MemRead;
 assign Mem_Read = Reg_pVDE;
-assign Mem_Read_Add = Reg_Read_Men_add[19:1];
+//assign Mem_Read_Add = Reg_Read_Men_add[19:1];
 
 
 assign Deb_Vsync_counter = Vsync_counter;

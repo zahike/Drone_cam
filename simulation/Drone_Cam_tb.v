@@ -30,7 +30,8 @@ rstn = 1'b0;
 HDMIrstn = 1'b0;
 #100;
 rstn = 1'b1;
-#10000000;
+//#1000000;
+#300;
 HDMIrstn = 1'b1;
 end
 always #4 clk = ~clk;
@@ -41,32 +42,19 @@ reg        m_axis_video_tvalid;   // input         s_axis_video_tvalid,
 reg        m_axis_video_tuser ;   // input         s_axis_video_tuser , 
 reg        m_axis_video_tlast ;   // input         s_axis_video_tlast , 
 
-reg [3:0] data;
+//reg [3:0] data;
+reg [11:0] data;
 always @(posedge clk or negedge rstn)
-    if (!rstn) data <= 4'h0;
+    if (!rstn) data <= 12'h000;
      else if (m_axis_video_tvalid) data <= data + 1;
-assign m_axis_video_tdata = {2'b00,data,4'h0,2'b00,data,4'h0,2'b00,data,4'h0,2'b00};      
+//assign m_axis_video_tdata = {2'b00,data,4'h0,2'b00,data,4'h0,2'b00,data,4'h0,2'b00};      
+assign m_axis_video_tdata = {2'b00,data[11:8],4'h0,2'b00,data[7:4],4'h0,2'b00,data[3:0],4'h0,2'b00};      
 initial begin 
-//m_axis_video_tdata  = 0;   // input  [23:0] s_axis_video_tdata , 
 m_axis_video_tvalid = 0;   // input         s_axis_video_tvalid, 
 m_axis_video_tuser  = 0;   // input         s_axis_video_tuser , 
 m_axis_video_tlast  = 0;   // input         s_axis_video_tlast , 
 @(posedge rstn);
 #100;
-//@(posedge clk);
-//#1;
-//m_axis_video_tuser  = 1'b1;   
-//m_axis_video_tvalid = 1'b1;   
-//@(posedge clk);
-//#1;
-//m_axis_video_tuser  = 1'b1;   
-//m_axis_video_tvalid = 1'b0; 
-//repeat (3) @(posedge clk); 
-//#1;
-//m_axis_video_tuser  = 1'b0;   
-//wr4fix_frame(1);
-////repeat (3) wr4fix;
-//repeat (39) wr16pix;
 repeat (5)begin 
         wrLine(1);
         repeat (479) wrLine(0);
@@ -181,7 +169,7 @@ wire  [11:0] HDMIdata_Slant     ;   // output [11:0] HDMIdata
     .Num_valid(Num_valid),
     .Line(Line)
   );
-
+/*
 wire [18:0] Mem_Read_Add ;
 
 MemBlock MemBlock_inst(
@@ -201,7 +189,8 @@ MemBlock MemBlock_inst(
 .Mem_Read_Add       (Mem_Read_Add       ),       //output [18:0] Mem_Read_Add ,           
 .HDMIdata           (HDMIdata           )        // output [11:0] HDMIdata             
     );
-
+*/
+wire FraimSync;
 SlantMem SlantMem_inst(
 .Cclk               (clk),                       // input Cclk,                        
 .rstn               (rstn),                      // input rstn,                        
@@ -213,6 +202,7 @@ SlantMem SlantMem_inst(
 .s_axis_video_tuser (mg_axis_video_tuser ),       // input         s_axis_video_tuser , 
 .s_axis_video_tlast (mg_axis_video_tlast ),       // input         s_axis_video_tlast , 
 
+.FraimSync          (FraimSync          ),
 .Hclk               (PixelClk           ),       // input Hclk,                        
 
 .HVsync             (HVsync             ),       // input HVsync,                      
@@ -240,9 +230,11 @@ wire [15 : 0] Deb_Line_counter;
     .Out_pVSync(HVsync),
     .Out_pHSync(Out_pHSync),
     .Out_pVDE(Out_pVDE),
+    .FraimSync(FraimSync),
     .Mem_Read(HMemRead),
-    .Mem_Read_Add(Mem_Read_Add),
-    .Mem_Data(HDMIdata),
+//    .Mem_Read_Add(Mem_Read_Add),
+//    .Mem_Data(HDMIdata),
+    .Mem_Data(HDMIdata_Slant),
     .Deb_Vsync_counter(Deb_Vsync_counter),
     .Deb_Hsync_counter(Deb_Hsync_counter),
     .Deb_Line_counter(Deb_Line_counter)

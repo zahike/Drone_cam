@@ -32,6 +32,8 @@ input         s_axis_video_tvalid,
 input         s_axis_video_tuser ,
 input         s_axis_video_tlast ,
 
+output FraimSync,
+
 input Hclk,
 
 input HVsync,
@@ -62,6 +64,13 @@ always @(posedge Cclk or negedge rstn)
      else if (s_axis_video_tuser && s_axis_video_tvalid)  Valid_odd <=  ~Valid_odd;
      else if (Del_Last)  Valid_odd <=  Valid_odd;
      else if (s_axis_video_tvalid) Valid_odd <= ~Valid_odd;
+
+reg Reg_FraimSync;
+always @(posedge Cclk or negedge rstn) 
+    if (!rstn) Reg_FraimSync <= 1'b0;
+     else if (s_axis_video_tuser && s_axis_video_tvalid && Valid_odd) Reg_FraimSync <= 1'b1;
+     else if (s_axis_video_tuser && s_axis_video_tvalid && ~Valid_odd) Reg_FraimSync <= 1'b0;
+assign FraimSync = Reg_FraimSync;
 
 reg [19:0] CWadd;
 always @(posedge Cclk or negedge rstn)
@@ -160,6 +169,5 @@ assign  HDMIdata = (REnslant[0] && Mem_cont[0]) ? Reg_Mem0 :
   
 assign s_axis_video_tready = 1'b1;   
 
-assign Debug_Add = HRadd;
   
 endmodule

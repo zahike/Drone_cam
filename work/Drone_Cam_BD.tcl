@@ -982,6 +982,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net SCCBGPIO_Top_0_sccb_clk_en [get_bd_ports sccb_clk_en_0] [get_bd_pins SCCBGPIO_Top_0/sccb_clk_en]
   connect_bd_net -net SCCBGPIO_Top_0_sccb_data_en [get_bd_ports sccb_data_en_0] [get_bd_pins SCCBGPIO_Top_0/sccb_data_en]
   connect_bd_net -net SCCBGPIO_Top_0_sccb_data_out [get_bd_ports sccb_data_out_0] [get_bd_pins SCCBGPIO_Top_0/sccb_data_out]
+  connect_bd_net -net SlantMem_0_FraimSync [get_bd_pins HDMIdebug_0/FraimSync] [get_bd_pins SlantMem_0/FraimSync]
   connect_bd_net -net SlantMem_0_HDMIdata [get_bd_pins HDMIdebug_0/Mem_Data] [get_bd_pins SlantMem_0/HDMIdata]
   connect_bd_net -net axi_apb_bridge_0_m_apb_paddr [get_bd_pins SCCBGPIO_Top_0/S_APB_0_paddr] [get_bd_pins axi_apb_bridge_0/m_apb_paddr]
   connect_bd_net -net axi_apb_bridge_0_m_apb_penable [get_bd_pins SCCBGPIO_Top_0/S_APB_0_penable] [get_bd_pins axi_apb_bridge_0/m_apb_penable]
