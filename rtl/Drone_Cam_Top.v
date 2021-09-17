@@ -63,6 +63,7 @@ inout cam_iic_sda_io,
   output [2:0]hdmi_tx_data_n  ,
   output [2:0]hdmi_tx_data_p  ,
   input       sys_clock       ,
+  input  [3:0] sw,
   output [3:0] ja_p,
   output [3:0] ja_n,
   output [4:1] jb_p,
@@ -140,6 +141,7 @@ Drone_Cam_BD Drone_Cam_BD_inst
 .dphy_hs_clock_clk_p(dphy_hs_clock_clk_p),        //input  dphy_hs_clock_clk_p
 
 .GPIO_0         (GPIO_0         ),    //  output GPIO_0;
+.Mem_cont       (sw             ),    // input [3:0]Mem_cont;
 .sccb_clk_0     (sccb_clk_0     ),    //  output sccb_clk_0;
 .sccb_clk_en_0  (sccb_clk_en_0  ),    //  output sccb_clk_en_0;
 .sccb_data_en_0 (sccb_data_en_0 ),    //  output sccb_data_en_0;
