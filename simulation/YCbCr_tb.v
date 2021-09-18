@@ -365,7 +365,7 @@ TopWriteData = 1'b0;
 TopWriteData = 1'b1;
     $display ("Collect data \n");
 Tf = $fopen("TopRGB.csv","w");
-$fwrite(Tf,"Num, Out G, In G, Diff, Out B, In B, Diff, Out R, In R, Diff \n",i,XilYCbCR[i],MyYCbCR[i]);
+$fwrite(Tf,"Num, Out G, In G, Diff G, Out B, In B, Diff B, Out R, In R, Diff R\n",i,XilYCbCR[i],MyYCbCR[i]);
 ReadAdd = 19'h00000;
 while (ReadAdd < 19'h40000)begin
 //for (Ti=0;Ti<18'h3ffff;Ti=Ti+1)begin
