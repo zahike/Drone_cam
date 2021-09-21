@@ -128,7 +128,7 @@ always @(posedge clk or negedge rstn)
 //wire [15:0] LongCb = 16'h8000 - CBRCONST*R - CBGCONST*G + CBBCONST*B; 
 //wire [15:0] LongCr = 16'h8000 + CRRCONST*R - CRGCONST*G - CRBCONST*B; 
 
-wire [17:0] LongY  = 16'h1000 + YR  + YG  + YB; 
+wire [17:0] LongY  = 16'h0000 + YR  + YG  + YB; 
 wire [17:0] LongCb = 16'h8000 - CbR - CbG + CbB; 
 wire [17:0] LongCr = 16'h8000 + CrR - CrG - CrB; 
 

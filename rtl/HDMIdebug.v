@@ -24,9 +24,6 @@ module HDMIdebug(
 input clk,
 input rstn,
 
-//input [15:0] colom,
-//input [15:0] Line,
-
 output [23:0] Out_pData ,
 output        Out_pVSync,
 output        Out_pHSync,
@@ -34,8 +31,8 @@ output        Out_pVDE  ,
 
 input         FraimSync,
 output        Mem_Read,
-output [18:0] Mem_Read_Add ,
-input  [11:0] Mem_Data,
+//input  [11:0] Mem_Data,
+input  [23:0] Mem_Data,
 
 output [31:0] Deb_Vsync_counter,
 output [15:0] Deb_Hsync_counter,
@@ -93,52 +90,27 @@ always @(posedge clk or negedge rstn)
 
 always @(posedge clk or negedge rstn) 
     if (!rstn) Reg_MemRead <= 1'b0;
-     else if (activeData && (Hsync_counter == 16'd142)) Reg_MemRead <= 1'b1;
-     else if (activeData && (Hsync_counter == 16'd782)) Reg_MemRead <= 1'b0;
+     else if (activeData && (Hsync_counter == 16'd140)) Reg_MemRead <= 1'b1;
+     else if (activeData && (Hsync_counter == 16'd780)) Reg_MemRead <= 1'b0;
 
 reg [19:0] Reg_Read_Men_add;
 always @(posedge clk or negedge rstn)
     if (!rstn) Reg_Read_Men_add <= 20'h00000;
      else if (!Reg_VSync) Reg_Read_Men_add <= 20'h00000;
-     else if (Reg_MemRead) Reg_Read_Men_add <= Reg_Read_Men_add + 1;
-
-//reg Frame_odd;
-//always @(posedge clk or negedge rstn)
-//    if (!rstn) Frame_odd <= 1'b0;
-//     else if (Vsync_counter == 32'd419999) Frame_odd <= ~Frame_odd;    
+     else if (Reg_pVDE) Reg_Read_Men_add <= Reg_Read_Men_add + 1;
 
 reg Line_odd;
 always @(posedge clk or negedge rstn)
     if (!rstn) Line_odd <= 1'b0;
-//     else if (Vsync_counter == 32'd419999) Line_odd <= ~Line_odd;    
      else if (Vsync_counter == 32'h00000000) Line_odd <= FraimSync;    
      else if ((Hsync_counter == 16'd783) && activeData) Line_odd <= ~Line_odd;    
      
-////wire [15:0] BotLine = {8'h02,Switch};   
-//wire [23:0] Static_Data = (!Reg_pVDE) ? 24'h000000 : 
-//                          ((Line[15:12] == 4'h8 ) || (colom[15:12] == 4'h8)) ? 
-//                                                (Reg_Read_Men_add[0] == Line_odd) ? 1'b0 : {Mem_Data[11:8],colom[3:0],Mem_Data[7:4],colom[3:0],Mem_Data[3:0],colom[3:0]} :
-//                          ((Line_counter == Line ) && (Hsync_counter == colom)) ? 24'hffffff :  24'hff0000;
-////                          ((Line_counter == 16'h0019) && (Hsync_counter == 16'd0260)) ? 24'hffffff :
-////                          ((Line_counter == 16'h0019) && (Hsync_counter == 16'd1539)) ? 24'hffffff :
-////                          ((Line_counter == BotLine ) && (Hsync_counter == 16'd0260)) ? 24'hffffff :
-////                          ((Line_counter == BotLine ) && (Hsync_counter == 16'd1539)) ? 24'hffffff :  24'hff0000;
-
-////assign Out_pData  = (!Switch[2]) ? vid_pData  : Static_Data ;
-////assign Out_pVSync = (!Switch[2]) ? vid_pVSync : Reg_VSync ;
-////assign Out_pHSync = (!Switch[2]) ? vid_pHSync : Reg_HSync ;
-////assign Out_pVDE   = (!Switch[2]) ? vid_pVDE   : Reg_pVDE  ;
-////assign Out_pData  =  (!Reg_pVDE) ? 24'h000000 : 
-////                     (Reg_Read_Men_add[0] == Line_odd) ? 24'h000000 : {Mem_Data[11:8],colom[3:0],Mem_Data[7:4],colom[3:0],Mem_Data[3:0],colom[3:0]} ;
-assign Out_pData  =  (Reg_pVDE && (Reg_Read_Men_add[0] == ~Line_odd)) ? {Mem_Data[11:8],4'hf,Mem_Data[7:4],4'hf,Mem_Data[3:0],4'hf} : 24'h000000 ;                
-//assign Out_pData  =  Static_Data ;
+assign Out_pData  =  (Reg_pVDE && (Reg_Read_Men_add[0] == Line_odd)) ? Mem_Data : 24'h000000 ;                
 assign Out_pVSync =  Reg_VSync ;
 assign Out_pHSync =  Reg_HSync ;
 assign Out_pVDE   =  Reg_pVDE  ;
 
-//assign Mem_Read = Reg_MemRead;
-assign Mem_Read = Reg_pVDE;
-//assign Mem_Read_Add = Reg_Read_Men_add[19:1];
+assign Mem_Read = Reg_MemRead;
 
 
 assign Deb_Vsync_counter = Vsync_counter;
