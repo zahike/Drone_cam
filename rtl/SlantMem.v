@@ -24,6 +24,9 @@ module SlantMem(
 input Cclk,
 input rstn,
 
+input  wire Sel,
+input  wire [23 : 0] Sel_RGB    ,
+
 input [3:0] Mem_cont,
 
 output        s_axis_video_tready,
@@ -103,7 +106,13 @@ always @(posedge Cclk or negedge rstn)
      else if (Valid_odd && Del_Last) WEnslant <= WEnslant;
      else if (s_axis_video_tvalid && Valid_odd) WEnslant <= {WEnslant[2:0],WEnslant[3]};
 
-wire [4:0] DelCData = (CWadd[0]) ? DelCrData : DelCbData;
+reg Line_Odd;
+always @(posedge Cclk or negedge rstn)
+    if (!rstn) Line_Odd <= 1'b0;
+     else if (Del_Last && ~Valid_odd) Line_Odd <= Reg_FraimSync ;
+     else if (Del_Last &&  Valid_odd) Line_Odd <= ~Reg_FraimSync ;
+
+wire [4:0] DelCData = (CWadd[0] == Line_Odd) ? DelCrData : DelCbData;
 
 reg [4:0] YMem0 [0:38399];
 reg [4:0] YMem1 [0:38399];
@@ -214,10 +223,8 @@ always @(posedge Hclk or negedge rstn)
             OutREnslant[2] <= OutREnslant[1];
            end
 
-    
-
-                                                  
-assign  HDMIdata = (OutREnslant[2][0] && Mem_cont[0]) ? RGB4Pix[23:0] :
+assign  HDMIdata = (Sel) ? Sel_RGB :
+                   (OutREnslant[2][0] && Mem_cont[0]) ? RGB4Pix[23:0] :
                    (OutREnslant[2][1] && Mem_cont[1]) ? RGB4Pix[47:24] :
                    (OutREnslant[2][2] && Mem_cont[2]) ? RGB4Pix[71:48] :
                    (OutREnslant[2][3] && Mem_cont[3]) ? RGB4Pix[95:72] : 24'h000000;

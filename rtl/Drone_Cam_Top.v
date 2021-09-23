@@ -122,15 +122,6 @@ Drone_Cam_BD Drone_Cam_BD_inst
 .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb),        //inout  FIXED_IO_ps_srstb
 .FCLK_CLK2_0(ILA_clk),
 .rstn(rstn),                            //output [0:0]rstn;
-//.GPIO_0_0_tri_i(GPIO_0_0_tri_i),        //input [0:0] GPIO_0_0_tri_i
-//.GPIO_0_0_tri_o(GPIO_0_0_tri_o),        //output [0:0] GPIO_0_0_tri_o
-//.GPIO_0_0_tri_t(GPIO_0_0_tri_t),        //output [0:0] GPIO_0_0_tri_t
-//.IIC_0_0_scl_i(IIC_0_0_scl_i),        //input  IIC_0_0_scl_i
-//.IIC_0_0_scl_o(IIC_0_0_scl_o),        //output  IIC_0_0_scl_o
-//.IIC_0_0_scl_t(IIC_0_0_scl_t),        //output  IIC_0_0_scl_t
-//.IIC_0_0_sda_i(IIC_0_0_sda_i),        //input  IIC_0_0_sda_i
-//.IIC_0_0_sda_o(IIC_0_0_sda_o),        //output  IIC_0_0_sda_o
-//.IIC_0_0_sda_t(IIC_0_0_sda_t),        //output  IIC_0_0_sda_t
 .dphy_clk_lp_n(dphy_clk_lp_n),        //input  dphy_clk_lp_n
 .dphy_clk_lp_p(dphy_clk_lp_p),        //input  dphy_clk_lp_p
 .dphy_data_hs_n(dphy_data_hs_n),        //input [1:0] dphy_data_hs_n
@@ -162,52 +153,13 @@ Drone_Cam_BD Drone_Cam_BD_inst
  .PixelClk  (jb_n[4])  
  );
  
-//   IOBUF GPIO_IOBUF_inst (
-//      .O (GPIO_0_0_tri_i),   // 1-bit output: Buffer output
-//      .I (GPIO_0_0_tri_o),   // 1-bit input: Buffer input
-//      .IO(cam_gpio_tri_io), // 1-bit inout: Buffer inout (connect directly to top-level port)
-//      .T (GPIO_0_0_tri_t)    // 1-bit input: 3-state enable input
-//   );
-//   IOBUF GPIO_IOBUF_inst (
-//      .O (GPIO_0_0_tri_i),   // 1-bit output: Buffer output
-//      .I (GPIO_0),   // 1-bit input: Buffer input
-//      .IO(cam_gpio_tri_io), // 1-bit inout: Buffer inout (connect directly to top-level port)
-//      .T (1'b1)    // 1-bit input: 3-state enable input
-//   );
 assign ja_n[0]         = GPIO_0; 
 assign cam_gpio_tri_io = GPIO_0; 
-
-//   IOBUF SCL_IOBUF_inst (
-//      .O(IIC_0_0_scl_i),   // 1-bit output: Buffer output
-//      .I(IIC_0_0_scl_o),   // 1-bit input: Buffer input
-//      .IO(cam_iic_scl_io), // 1-bit inout: Buffer inout (connect directly to top-level port)
-//      .T(IIC_0_0_scl_t)    // 1-bit input: 3-state enable input
-//   );
-//   IOBUF SCL_IOBUF_inst (
-//      .O(IIC_0_0_scl_i),   // 1-bit output: Buffer output
-//      .I(sccb_clk_0),   // 1-bit input: Buffer input
-//      .IO(cam_iic_scl_io), // 1-bit inout: Buffer inout (connect directly to top-level port)
-//      .T(sccb_clk_en_0)    // 1-bit input: 3-state enable input
-//   );
 
 assign cam_iic_scl_io  = (sccb_clk_en_0) ? sccb_clk_0 : 1'b1;
 assign cam_iic_sda_io = (~sccb_data_en_0) ? sccb_data_out_0 : 1'bz;
 assign sccb_data_in_0 = cam_iic_sda_io;
 
-//   IOBUF SDA_IOBUF_inst (
-//      .O(IIC_0_0_sda_i),   // 1-bit output: Buffer output
-//      .I(IIC_0_0_sda_o),   // 1-bit input: Buffer input
-//      .IO(cam_iic_sda_io), // 1-bit inout: Buffer inout (connect directly to top-level port)
-//      .T(IIC_0_0_sda_t)    // 1-bit input: 3-state enable input
-//   );
-//   IOBUF SDA_IOBUF_inst (
-//   .O(sccb_data_in_0),   // 1-bit output: Buffer output
-//   .I(sccb_data_out_0),   // 1-bit input: Buffer input
-//   .IO(cam_iic_sda_io), // 1-bit inout: Buffer inout (connect directly to top-level port)
-//   .T(sccb_data_en_0)    // 1-bit input: 3-state enable input
-//);
-//assign ja_p[0] = (~sccb_clk_en_0) ? sccb_data_in_0 : 1'b1; 
-//assign ja_p[1] = (sccb_clk_en_0) ? sccb_clk_0 : 1'b1;
 assign ja_p[0] = cam_iic_scl_io; 
 assign ja_p[1] = cam_iic_sda_io;
 
@@ -220,17 +172,4 @@ always @(posedge ILA_clk or negedge rstn)
     if (!rstn) IICshift <= 32'h00000000;
      else if (DevIIC == 2'b01) IICshift <= {IICshift[30:0],sccb_data_in_0};
 
-////----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
-//   ila_0 Slow_Sign_ila (
-//       .clk(ILA_clk), // input wire clk   
-
-//	.probe0(sccb_data_en_0), // input wire [0:0]  probe0  
-//	.probe1(sccb_data_in_0), // input wire [0:0]  probe1 
-//	.probe2(sccb_clk_en_0), // input wire [0:0]  probe2 
-//	.probe3(sccb_clk_0), // input wire [0:0]  probe3 
-//	.probe4(GPIO_0), // input wire [0:0]  probe4 
-//	.probe5(IICshift) // input wire [31:0]  probe5
-   
-//   );
-    
 endmodule

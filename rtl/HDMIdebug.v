@@ -105,7 +105,12 @@ always @(posedge clk or negedge rstn)
      else if (Vsync_counter == 32'h00000000) Line_odd <= FraimSync;    
      else if ((Hsync_counter == 16'd783) && activeData) Line_odd <= ~Line_odd;    
      
-assign Out_pData  =  (Reg_pVDE && (Reg_Read_Men_add[0] == Line_odd)) ? Mem_Data : 24'h000000 ;                
+wire [23:0] Inc_Mem_Data;
+assign Inc_Mem_Data  [7:0] = (Mem_Data  [7:4] != 4'h0) ? {Mem_Data  [7:3],3'b111} : Mem_Data  [7:0];
+assign Inc_Mem_Data [15:8] = (Mem_Data[15:12] != 4'h0) ? {Mem_Data[15:11],3'b111} : Mem_Data [15:8];
+assign Inc_Mem_Data[23:16] = (Mem_Data[23:20] != 4'h0) ? {Mem_Data[23:19],3'b111} : Mem_Data[23:16];
+   
+assign Out_pData  =  (Reg_pVDE && (Reg_Read_Men_add[0] == Line_odd)) ? Inc_Mem_Data : 24'h000000 ;                
 assign Out_pVSync =  Reg_VSync ;
 assign Out_pHSync =  Reg_HSync ;
 assign Out_pVDE   =  Reg_pVDE  ;

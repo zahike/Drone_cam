@@ -445,17 +445,14 @@ proc create_root_design { parentCell } {
   # Create instance: ila_0, and set properties
   set ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ila:6.2 ila_0 ]
   set_property -dict [ list \
-   CONFIG.C_DATA_DEPTH {4096} \
    CONFIG.C_ENABLE_ILA_AXI_MON {false} \
    CONFIG.C_MONITOR_TYPE {Native} \
-   CONFIG.C_NUM_OF_PROBES {13} \
-   CONFIG.C_PROBE10_WIDTH {32} \
-   CONFIG.C_PROBE11_WIDTH {16} \
-   CONFIG.C_PROBE12_WIDTH {16} \
+   CONFIG.C_NUM_OF_PROBES {5} \
+   CONFIG.C_PROBE0_WIDTH {24} \
+   CONFIG.C_PROBE1_WIDTH {24} \
+   CONFIG.C_PROBE2_WIDTH {24} \
    CONFIG.C_PROBE3_WIDTH {24} \
-   CONFIG.C_PROBE4_WIDTH {16} \
-   CONFIG.C_PROBE5_WIDTH {16} \
-   CONFIG.C_PROBE6_WIDTH {16} \
+   CONFIG.C_PROBE4_WIDTH {24} \
  ] $ila_0
 
   # Create instance: proc_sys_reset_0, and set properties
@@ -992,13 +989,10 @@ proc create_root_design { parentCell } {
 
   # Create interface connections
   connect_bd_intf_net -intf_net AXI_BayerToRGB_0_m_axis_video [get_bd_intf_pins AXI_BayerToRGB_0/m_axis_video] [get_bd_intf_pins GammDebug_0/s_axis_video]
-  connect_bd_intf_net -intf_net GammDebug_0_m_axis_video [get_bd_intf_pins GammDebug_0/m_axis_video] [get_bd_intf_pins VideoSlice_0/s_axis_video]
   connect_bd_intf_net -intf_net MIPI_CSI_2_RX_0_m_axis_video [get_bd_intf_pins AXI_BayerToRGB_0/s_axis_video] [get_bd_intf_pins MIPI_CSI_2_RX_0/m_axis_video]
   connect_bd_intf_net -intf_net MIPI_D_PHY_RX_0_D_PHY_PPI [get_bd_intf_pins MIPI_CSI_2_RX_0/rx_mipi_ppi] [get_bd_intf_pins MIPI_D_PHY_RX_0/D_PHY_PPI]
   connect_bd_intf_net -intf_net MyRGB_0_m_axis_video [get_bd_intf_pins MyRGB_0/m_axis_video] [get_bd_intf_pins VideoMUX_0/ys_axis_video]
-  connect_bd_intf_net -intf_net MyYCbCr_0_m_axis_video [get_bd_intf_pins MyYCbCr_0/m_axis_video] [get_bd_intf_pins SlantMem_0/s_axis_video]
   connect_bd_intf_net -intf_net VideoSlice_0_om_axis_video [get_bd_intf_pins VideoMUX_0/os_axis_video] [get_bd_intf_pins VideoSlice_0/om_axis_video]
-  connect_bd_intf_net -intf_net VideoSlice_0_ym_axis_video [get_bd_intf_pins MyYCbCr_0/s_axis_video] [get_bd_intf_pins VideoSlice_0/ym_axis_video]
   connect_bd_intf_net -intf_net axi_apb_bridge_0_APB_M [get_bd_intf_ports APB_M_0] [get_bd_intf_pins axi_apb_bridge_0/APB_M]
   connect_bd_intf_net -intf_net dphy_hs_clock_0_1 [get_bd_intf_ports dphy_hs_clock] [get_bd_intf_pins MIPI_D_PHY_RX_0/dphy_hs_clock]
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
@@ -1009,25 +1003,24 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net ps7_0_axi_periph_M02_AXI [get_bd_intf_pins axi_apb_bridge_0/AXI4_LITE] [get_bd_intf_pins ps7_0_axi_periph/M02_AXI]
 
   # Create port connections
-  connect_bd_net -net GammDebug_0_Line [get_bd_pins GammDebug_0/Line] [get_bd_pins ila_0/probe6]
-  connect_bd_net -net GammDebug_0_Num_valid [get_bd_pins GammDebug_0/Num_valid] [get_bd_pins ila_0/probe5]
-  connect_bd_net -net GammDebug_0_Orjtlast [get_bd_pins GammDebug_0/Orjtlast] [get_bd_pins ila_0/probe1]
-  connect_bd_net -net GammDebug_0_Orjtuser [get_bd_pins GammDebug_0/Orjtuser] [get_bd_pins ila_0/probe0]
-  connect_bd_net -net GammDebug_0_Orjtvalid [get_bd_pins GammDebug_0/Orjtvalid] [get_bd_pins ila_0/probe2]
+  connect_bd_net -net GammDebug_0_m_axis_video_tdata [get_bd_pins GammDebug_0/m_axis_video_tdata] [get_bd_pins MyYCbCr_0/s_axis_video_tdata] [get_bd_pins ila_0/probe3]
+  connect_bd_net -net GammDebug_0_m_axis_video_tlast [get_bd_pins GammDebug_0/m_axis_video_tlast] [get_bd_pins MyYCbCr_0/s_axis_video_tlast]
+  connect_bd_net -net GammDebug_0_m_axis_video_tuser [get_bd_pins GammDebug_0/m_axis_video_tuser] [get_bd_pins MyYCbCr_0/s_axis_video_tuser]
+  connect_bd_net -net GammDebug_0_m_axis_video_tvalid [get_bd_pins GammDebug_0/m_axis_video_tvalid] [get_bd_pins MyYCbCr_0/s_axis_video_tvalid]
   connect_bd_net -net GammDebug_0_tlast [get_bd_ports tlast] [get_bd_pins GammDebug_0/tlast]
-  connect_bd_net -net GammDebug_0_tlast_count [get_bd_pins GammDebug_0/tlast_count] [get_bd_pins ila_0/probe4]
   connect_bd_net -net GammDebug_0_tuser [get_bd_ports tuser] [get_bd_pins GammDebug_0/tuser]
-  connect_bd_net -net GammDebug_0_tuser_count [get_bd_pins GammDebug_0/tuser_count] [get_bd_pins ila_0/probe3]
-  connect_bd_net -net HDMIdebug_0_Deb_Hsync_counter [get_bd_pins HDMIdebug_0/Deb_Hsync_counter] [get_bd_pins ila_0/probe11]
-  connect_bd_net -net HDMIdebug_0_Deb_Line_counter [get_bd_pins HDMIdebug_0/Deb_Line_counter] [get_bd_pins ila_0/probe12]
-  connect_bd_net -net HDMIdebug_0_Deb_Vsync_counter [get_bd_pins HDMIdebug_0/Deb_Vsync_counter] [get_bd_pins ila_0/probe10]
   connect_bd_net -net HDMIdebug_0_Mem_Read [get_bd_pins HDMIdebug_0/Mem_Read] [get_bd_pins SlantMem_0/HMemRead]
-  connect_bd_net -net HDMIdebug_0_Out_pData [get_bd_pins HDMIdebug_0/Out_pData] [get_bd_pins rgb2dvi_0/vid_pData]
-  connect_bd_net -net HDMIdebug_0_Out_pHSync [get_bd_ports Out_pHSync] [get_bd_pins HDMIdebug_0/Out_pHSync] [get_bd_pins ila_0/probe8] [get_bd_pins rgb2dvi_0/vid_pVSync]
-  connect_bd_net -net HDMIdebug_0_Out_pVDE [get_bd_ports Out_pVDE] [get_bd_pins HDMIdebug_0/Out_pVDE] [get_bd_pins SlantMem_0/pVDE] [get_bd_pins ila_0/probe9] [get_bd_pins rgb2dvi_0/vid_pVDE]
-  connect_bd_net -net HDMIdebug_0_Out_pVSync [get_bd_ports Out_pVSync] [get_bd_pins HDMIdebug_0/Out_pVSync] [get_bd_pins SlantMem_0/HVsync] [get_bd_pins ila_0/probe7] [get_bd_pins rgb2dvi_0/vid_pHSync]
+  connect_bd_net -net HDMIdebug_0_Out_pData [get_bd_pins HDMIdebug_0/Out_pData] [get_bd_pins ila_0/probe4] [get_bd_pins rgb2dvi_0/vid_pData]
+  connect_bd_net -net HDMIdebug_0_Out_pHSync [get_bd_ports Out_pHSync] [get_bd_pins HDMIdebug_0/Out_pHSync] [get_bd_pins rgb2dvi_0/vid_pVSync]
+  connect_bd_net -net HDMIdebug_0_Out_pVDE [get_bd_ports Out_pVDE] [get_bd_pins HDMIdebug_0/Out_pVDE] [get_bd_pins SlantMem_0/pVDE] [get_bd_pins rgb2dvi_0/vid_pVDE]
+  connect_bd_net -net HDMIdebug_0_Out_pVSync [get_bd_ports Out_pVSync] [get_bd_pins HDMIdebug_0/Out_pVSync] [get_bd_pins SlantMem_0/HVsync] [get_bd_pins rgb2dvi_0/vid_pHSync]
   connect_bd_net -net MIPI_D_PHY_RX_0_RxByteClkHS [get_bd_pins MIPI_CSI_2_RX_0/RxByteClkHS] [get_bd_pins MIPI_D_PHY_RX_0/RxByteClkHS] [get_bd_pins util_ds_buf_0/BUFG_I]
   connect_bd_net -net Mem_cont_0_1 [get_bd_ports Mem_cont] [get_bd_pins SlantMem_0/Mem_cont]
+  connect_bd_net -net MyYCbCr_0_m_axis_video_tdata [get_bd_pins MyYCbCr_0/m_axis_video_tdata] [get_bd_pins SlantMem_0/s_axis_video_tdata] [get_bd_pins ila_0/probe1]
+  connect_bd_net -net MyYCbCr_0_m_axis_video_tlast [get_bd_pins MyYCbCr_0/m_axis_video_tlast] [get_bd_pins SlantMem_0/s_axis_video_tlast]
+  connect_bd_net -net MyYCbCr_0_m_axis_video_tuser [get_bd_pins MyYCbCr_0/m_axis_video_tuser] [get_bd_pins SlantMem_0/s_axis_video_tuser]
+  connect_bd_net -net MyYCbCr_0_m_axis_video_tvalid [get_bd_pins MyYCbCr_0/m_axis_video_tvalid] [get_bd_pins SlantMem_0/s_axis_video_tvalid]
+  connect_bd_net -net MyYCbCr_0_s_axis_video_tready [get_bd_pins GammDebug_0/m_axis_video_tready] [get_bd_pins MyYCbCr_0/s_axis_video_tready]
   connect_bd_net -net SCCBGPIO_Top_0_GPIO [get_bd_ports GPIO_0] [get_bd_pins SCCBGPIO_Top_0/GPIO]
   connect_bd_net -net SCCBGPIO_Top_0_S_APB_0_prdata [get_bd_pins SCCBGPIO_Top_0/S_APB_0_prdata] [get_bd_pins axi_apb_bridge_0/m_apb_prdata]
   connect_bd_net -net SCCBGPIO_Top_0_S_APB_0_pready [get_bd_pins SCCBGPIO_Top_0/S_APB_0_pready] [get_bd_pins axi_apb_bridge_0/m_apb_pready]
@@ -1037,7 +1030,8 @@ proc create_root_design { parentCell } {
   connect_bd_net -net SCCBGPIO_Top_0_sccb_data_en [get_bd_ports sccb_data_en_0] [get_bd_pins SCCBGPIO_Top_0/sccb_data_en]
   connect_bd_net -net SCCBGPIO_Top_0_sccb_data_out [get_bd_ports sccb_data_out_0] [get_bd_pins SCCBGPIO_Top_0/sccb_data_out]
   connect_bd_net -net SlantMem_0_FraimSync [get_bd_pins HDMIdebug_0/FraimSync] [get_bd_pins SlantMem_0/FraimSync]
-  connect_bd_net -net SlantMem_0_HDMIdata [get_bd_pins HDMIdebug_0/Mem_Data] [get_bd_pins SlantMem_0/HDMIdata]
+  connect_bd_net -net SlantMem_0_HDMIdata [get_bd_pins HDMIdebug_0/Mem_Data] [get_bd_pins SlantMem_0/HDMIdata] [get_bd_pins ila_0/probe2]
+  connect_bd_net -net SlantMem_0_s_axis_video_tready [get_bd_pins MyYCbCr_0/m_axis_video_tready] [get_bd_pins SlantMem_0/s_axis_video_tready]
   connect_bd_net -net axi_apb_bridge_0_m_apb_paddr [get_bd_pins SCCBGPIO_Top_0/S_APB_0_paddr] [get_bd_pins axi_apb_bridge_0/m_apb_paddr]
   connect_bd_net -net axi_apb_bridge_0_m_apb_penable [get_bd_pins SCCBGPIO_Top_0/S_APB_0_penable] [get_bd_pins axi_apb_bridge_0/m_apb_penable]
   connect_bd_net -net axi_apb_bridge_0_m_apb_psel [get_bd_pins SCCBGPIO_Top_0/S_APB_0_psel] [get_bd_pins axi_apb_bridge_0/m_apb_psel]
@@ -1067,9 +1061,9 @@ proc create_root_design { parentCell } {
   connect_bd_net -net sccb_data_in_0_1 [get_bd_ports sccb_data_in_0] [get_bd_pins SCCBGPIO_Top_0/sccb_data_in]
   connect_bd_net -net sys_clock_1 [get_bd_ports sys_clock] [get_bd_pins clk_wiz_0/clk_in1]
   connect_bd_net -net util_ds_buf_0_BUFG_O [get_bd_ports RxByteClkHS] [get_bd_pins util_ds_buf_0/BUFG_O]
-  connect_bd_net -net vio_0_probe_out0 [get_bd_pins MyYCbCr_0/Sel_RGB] [get_bd_pins vio_0/probe_out0]
+  connect_bd_net -net vio_0_probe_out0 [get_bd_pins MyYCbCr_0/Sel_RGB] [get_bd_pins SlantMem_0/Sel_RGB] [get_bd_pins ila_0/probe0] [get_bd_pins vio_0/probe_out0]
   connect_bd_net -net vio_0_probe_out1 [get_bd_pins MyYCbCr_0/Sel] [get_bd_pins vio_0/probe_out1]
-  connect_bd_net -net vio_0_probe_out2 [get_bd_pins VideoMUX_0/Sel] [get_bd_pins vio_0/probe_out2]
+  connect_bd_net -net vio_0_probe_out2 [get_bd_pins SlantMem_0/Sel] [get_bd_pins VideoMUX_0/Sel] [get_bd_pins vio_0/probe_out2]
 
   # Create address segments
   create_bd_addr_seg -range 0x00010000 -offset 0x43C20000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs APB_M_0/Reg] SEG_APB_M_0_Reg

@@ -5,7 +5,7 @@
 // 
 // Create Date: 01.09.2021 20:05:47
 // Design Name: 
-// Module Name: Drone_Cam_tb
+// Module Name: Color_Test_tb
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module Drone_Cam_tb();
+module Color_Test_tb();
 reg clk;
 reg rstn;
 reg HDMIrstn;
@@ -63,7 +63,28 @@ repeat (3)begin
 $finish;    
 end
 
+//reg [23 : 0] Sel_RGB;
+//initial begin 
+//Sel_RGB = 24'hff0000;
+//@(posedge m_axis_video_tuser);
+//@(posedge m_axis_video_tlast);
+//Sel_RGB = 24'hff0000;
+//@(posedge m_axis_video_tlast);
+//Sel_RGB = 24'h00ff00;
+//@(posedge m_axis_video_tlast);
+//Sel_RGB = 24'hffff00;
+//@(posedge m_axis_video_tlast);
+//Sel_RGB = 24'h0000ff;
+//@(posedge m_axis_video_tlast);
+//Sel_RGB = 24'hff00ff;
+//@(posedge m_axis_video_tlast);
+//Sel_RGB = 24'h00ffff;
+//@(posedge m_axis_video_tlast);
+//Sel_RGB = 24'hffffff;
+//@(posedge m_axis_video_tlast);
+//end 
 
+wire [23 : 0] Sel_RGB = 24'hff0000;
 
 wire SerilsClk;
 wire PixelClk ;
@@ -95,9 +116,10 @@ clkDiv clkDiv_inst(
  
 // MyYCbCr
  MyYCbCr MyYCbCr_inst(
- .clk (clk )                          ,
- .rstn(rstn)        ,
- .Sel(1'b0)                  ,
+ .clk (clk )                 ,
+ .rstn(rstn)                 ,
+ .Sel(1'b1)                  ,
+ .Sel_RGB(Sel_RGB)          ,
  .s_axis_video_tdata   (Ms_axis_video_tdata )   ,
  .s_axis_video_tready  (Ms_axis_video_tready)   ,
  .s_axis_video_tvalid  (Ms_axis_video_tvalid)   ,
@@ -137,6 +159,9 @@ wire pVDE;
 SlantMem SlantMem_inst(
 .Cclk               (clk),                       // input Cclk,                        
 .rstn               (rstn),                      // input rstn,                        
+
+ .Sel(1'b0)                  ,
+ .Sel_RGB(Sel_RGB)          ,
 
 .Mem_cont           (4'hf),
 .s_axis_video_tready(Mm_axis_video_tready),       // output        s_axis_video_tready, 
