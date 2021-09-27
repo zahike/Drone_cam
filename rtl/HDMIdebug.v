@@ -90,8 +90,8 @@ always @(posedge clk or negedge rstn)
 
 always @(posedge clk or negedge rstn) 
     if (!rstn) Reg_MemRead <= 1'b0;
-     else if (activeData && (Hsync_counter == 16'd140)) Reg_MemRead <= 1'b1;
-     else if (activeData && (Hsync_counter == 16'd780)) Reg_MemRead <= 1'b0;
+     else if (activeData && (Hsync_counter == 16'd143)) Reg_MemRead <= 1'b1;
+     else if (activeData && (Hsync_counter == 16'd783)) Reg_MemRead <= 1'b0;
 
 reg [19:0] Reg_Read_Men_add;
 always @(posedge clk or negedge rstn)

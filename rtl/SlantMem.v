@@ -45,6 +45,7 @@ input pVDE    ,
 output [23:0] HDMIdata
     );
 
+parameter INC = 8;
 reg Del_Last;
 always @(posedge Cclk or negedge rstn)
     if (!rstn) Del_Last <= 1'b0;
@@ -54,17 +55,10 @@ always @(posedge Cclk or negedge rstn)
     if (!rstn) Del_Valid <= 1'b0;
      else Del_Valid <= s_axis_video_tvalid;
 
-//reg [11:0] DelData;
-////reg [8:0] DelData;
-//always @(posedge Cclk or negedge rstn)
-//    if (!rstn) DelData <= 12'h000;
-//     else if (s_axis_video_tvalid) DelData <= {s_axis_video_tdata[23:20],s_axis_video_tdata[15:12],s_axis_video_tdata[7:4]};     
-////     else if (s_axis_video_tvalid) DelData <= {s_axis_video_tdata[23:21],s_axis_video_tdata[15:13],s_axis_video_tdata[7:5]};     
-wire [4:0] YData  = /*( s_axis_video_tdata[2] )                            ? s_axis_video_tdata[7:3]   + 1 :*/ s_axis_video_tdata[7:3]  ; 
-wire [4:0] CbData = /*( s_axis_video_tdata[15] &&  s_axis_video_tdata[10]) ? s_axis_video_tdata[15:11] + 1 :*/ 
-                    /*(~s_axis_video_tdata[15] && ~s_axis_video_tdata[10]) ? s_axis_video_tdata[15:11] - 1 :*/ s_axis_video_tdata[15:11];
-wire [4:0] CrData = /*( s_axis_video_tdata[23] &&  s_axis_video_tdata[18]) ? s_axis_video_tdata[23:19] + 1 :*/  
-                    /*(~s_axis_video_tdata[23] && ~s_axis_video_tdata[18]) ? s_axis_video_tdata[23:19] - 1 :*/ s_axis_video_tdata[23:19];
+//wire [4:0] YData  = s_axis_video_tdata[7:3]  ; 
+wire [4:0] YData  = (s_axis_video_tdata[7:3]<5'h1f-INC) ? s_axis_video_tdata[7:3]+INC : 5'h1f ; 
+wire [4:0] CbData = s_axis_video_tdata[15:11];
+wire [4:0] CrData = s_axis_video_tdata[23:19];
 reg [4:0] DelYData;
 always @(posedge Cclk or negedge rstn)
     if (!rstn) DelYData <= 5'h00;
@@ -139,52 +133,57 @@ always @(posedge Cclk)
 always @(posedge Cclk)                                       
     if (WEnslant[3] && Del_Valid && Valid_odd) CMem3[CWadd[19:2]] <= DelCData;
 
+reg [4:0] HclkSR;
+always @(posedge Cclk or negedge rstn)
+    if (!rstn) HclkSR <= 5'h00;
+     else HclkSR <= {HclkSR[3:0],Hclk};
+     
 reg [19:0] HRadd;
-always @(posedge Hclk or negedge rstn)
-    if (!rstn) HRadd <= 20'h00001;
-     else if (!HVsync) HRadd <= 20'h00001;
-     else if (HMemRead) HRadd <= HRadd + 1;
+always @(posedge Cclk or negedge rstn)
+    if (!rstn) HRadd <= 20'h00000;
+     else if (!HVsync) HRadd <= 20'h00000;
+     else if ((HclkSR == 5'h18) && HMemRead) HRadd <= HRadd + 1;
 
 reg [4:0] Reg_YMem0;
 reg [4:0] Reg_YMem1;
 reg [4:0] Reg_YMem2;
 reg [4:0] Reg_YMem3;
-always @(posedge Hclk)
+always @(posedge Cclk)
     Reg_YMem0 <=  YMem0[HRadd[19:3]];
-always @(posedge Hclk)
+always @(posedge Cclk)
     Reg_YMem1 <=  YMem1[HRadd[19:3]];
-always @(posedge Hclk)
+always @(posedge Cclk)
     Reg_YMem2 <=  YMem2[HRadd[19:3]];
-always @(posedge Hclk)
+always @(posedge Cclk)
     Reg_YMem3 <=  YMem3[HRadd[19:3]];
 reg [4:0] Reg_CMem0;
 reg [4:0] Reg_CMem1;
 reg [4:0] Reg_CMem2;
 reg [4:0] Reg_CMem3;
-always @(posedge Hclk)
+always @(posedge Cclk)
     Reg_CMem0 <=  CMem0[HRadd[19:3]];
-always @(posedge Hclk)
+always @(posedge Cclk)
     Reg_CMem1 <=  CMem1[HRadd[19:3]];
-always @(posedge Hclk)
+always @(posedge Cclk)
     Reg_CMem2 <=  CMem2[HRadd[19:3]];
-always @(posedge Hclk)
+always @(posedge Cclk)
     Reg_CMem3 <=  CMem3[HRadd[19:3]];
 
 reg Del_HMemRead;
-always @(posedge Hclk or negedge rstn) 
+always @(posedge Cclk or negedge rstn) 
     if (!rstn) Del_HMemRead <= 1'b0;
      else Del_HMemRead <= HMemRead;
 reg [3:0] REnslant;
-always @(posedge Hclk or negedge rstn)
+always @(posedge Cclk or negedge rstn)
     if (!rstn) REnslant <= 4'h1;
      else if (!HVsync) REnslant <= 4'h1;
-     else if (!HMemRead && Del_HMemRead) REnslant <= {REnslant[0],REnslant[3:1]};
-     else if (HMemRead && !HRadd[0]) REnslant <= {REnslant[2:0],REnslant[3]};
+     else if ((HclkSR == 5'h18) && !HMemRead && Del_HMemRead) REnslant <= {REnslant[0],REnslant[3:1]};
+     else if ((HclkSR == 5'h0c) && HMemRead && !HRadd[0]) REnslant <= {REnslant[2:0],REnslant[3]};
 
 reg [95:0] YCbCr4Pix;
-always @(posedge Hclk or negedge rstn)
+always @(posedge Cclk or negedge rstn)
     if (!rstn) YCbCr4Pix <= {96{1'b0}};
-     else if (HRadd[2:0] == 3'b001) YCbCr4Pix <= {Reg_CMem3,3'b000,Reg_CMem2,3'b000,Reg_YMem3,3'b000,
+     else if (HRadd[2:0] == 3'b000) YCbCr4Pix <= {Reg_CMem3,3'b000,Reg_CMem2,3'b000,Reg_YMem3,3'b000,
                                                   Reg_CMem3,3'b000,Reg_CMem2,3'b000,Reg_YMem2,3'b000,
                                                   Reg_CMem1,3'b000,Reg_CMem0,3'b000,Reg_YMem1,3'b000,
                                                   Reg_CMem1,3'b000,Reg_CMem0,3'b000,Reg_YMem0,3'b000};
@@ -195,7 +194,7 @@ genvar i;
 generate 
 for (i=0;i<4;i=i+1) begin
         PixYCbCr2RGB PixYCbCr2RGB_inst(
-        .clk      (Hclk),
+        .clk      (Cclk),
         .rstn     (rstn),
                  
         .YCbCrData(YCbCr4Pix[24*i+23:24*i]),
@@ -205,31 +204,39 @@ for (i=0;i<4;i=i+1) begin
     end
 endgenerate     
 
-reg [3:0] OutREnslant[0:2];
-always @(posedge Hclk or negedge rstn)
-    if (!rstn) begin 
-            OutREnslant[0] <= 4'h1;
-            OutREnslant[1] <= 4'h1;
-            OutREnslant[2] <= 4'h1;
-        end
-//     else if (!HMemRead && !pVDE) begin
-//            OutREnslant[0] <= REnslant;
-//            OutREnslant[1] <= REnslant;
-//            OutREnslant[2] <= REnslant;
+//reg [3:0] OutREnslant[0:2];
+//always @(posedge Cclk or negedge rstn)
+//    if (!rstn) begin 
+//            OutREnslant[0] <= 4'h1;
+//            OutREnslant[1] <= 4'h1;
+//            OutREnslant[2] <= 4'h1;
 //        end
-     else  begin
-            OutREnslant[0] <= REnslant;
-            OutREnslant[1] <= OutREnslant[0];
-            OutREnslant[2] <= OutREnslant[1];
-           end
+//     else  begin
+//            OutREnslant[0] <= REnslant;
+//            OutREnslant[1] <= OutREnslant[0];
+//            OutREnslant[2] <= OutREnslant[1];
+//           end
 
 assign  HDMIdata = (Sel) ? Sel_RGB :
-                   (OutREnslant[2][0] && Mem_cont[0]) ? RGB4Pix[23:0] :
-                   (OutREnslant[2][1] && Mem_cont[1]) ? RGB4Pix[47:24] :
-                   (OutREnslant[2][2] && Mem_cont[2]) ? RGB4Pix[71:48] :
-                   (OutREnslant[2][3] && Mem_cont[3]) ? RGB4Pix[95:72] : 24'h000000;
+                   (REnslant[0] && Mem_cont[0]) ? RGB4Pix[23:0] :
+                   (REnslant[1] && Mem_cont[1]) ? RGB4Pix[47:24] :
+                   (REnslant[2] && Mem_cont[2]) ? RGB4Pix[71:48] :
+                   (REnslant[3] && Mem_cont[3]) ? RGB4Pix[95:72] : 24'h000000;
   
 assign s_axis_video_tready = 1'b1;   
 
+
+reg [4:0] Reg_YTMem0;
+reg [4:0] Reg_YTMem1;
+reg [4:0] Reg_YTMem2;
+reg [4:0] Reg_YTMem3;
+always @(posedge Cclk)
+    Reg_YTMem0 <=  YMem0[HRadd[19:3]];
+always @(posedge Cclk)
+    Reg_YTMem1 <=  YMem1[HRadd[19:3]];
+always @(posedge Cclk)
+    Reg_YTMem2 <=  YMem2[HRadd[19:3]];
+always @(posedge Cclk)
+    Reg_YTMem3 <=  YMem3[HRadd[19:3]];
   
 endmodule

@@ -48,15 +48,18 @@ output wire m_axis_video_tuser
 //localparam CRGCONST = 107;
 //localparam CRBCONST = 21;
 
-localparam YGCONST = 19;
+//localparam YGCONST = 19;
+localparam YGCONST = 13;
 localparam YBCONST = 4;
 localparam YRCONST = 10;
 
-localparam CBGCONST = 11;
+//localparam CBGCONST = 11;
+localparam CBGCONST = 5;
 localparam CBBCONST = 16;
 localparam CBRCONST = 5;
 
-localparam CRGCONST = 13;
+//localparam CRGCONST = 13;
+localparam CRGCONST = 7;
 localparam CRBCONST = 3;
 localparam CRRCONST = 16;
 

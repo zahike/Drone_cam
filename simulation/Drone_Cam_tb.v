@@ -138,6 +138,9 @@ SlantMem SlantMem_inst(
 .Cclk               (clk),                       // input Cclk,                        
 .rstn               (rstn),                      // input rstn,                        
 
+.Sel       (1'b0) ,
+.Sel_RGB   (24'h000000) ,
+
 .Mem_cont           (4'hf),
 .s_axis_video_tready(Mm_axis_video_tready),       // output        s_axis_video_tready, 
 .s_axis_video_tdata (Mm_axis_video_tdata ),       // input  [23:0] s_axis_video_tdata , 
