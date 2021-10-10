@@ -37,6 +37,11 @@ input         s_axis_video_tlast ,
 
 output FraimSync,
 
+output [7:0] Trans0Data,
+output [7:0] Trans1Data,
+output [7:0] Trans2Data,
+output [7:0] Trans3Data,
+
 input Hclk,
 
 input HVsync  ,
@@ -46,6 +51,9 @@ output [23:0] HDMIdata
     );
 
 parameter INC = 8;
+parameter FRAME1 = 24'haab155;
+parameter FRAME0 = 24'haa8d55;
+parameter HSYNC  = 16'ha355;
 reg Del_Last;
 always @(posedge Cclk or negedge rstn)
     if (!rstn) Del_Last <= 1'b0;
@@ -204,19 +212,6 @@ for (i=0;i<4;i=i+1) begin
     end
 endgenerate     
 
-//reg [3:0] OutREnslant[0:2];
-//always @(posedge Cclk or negedge rstn)
-//    if (!rstn) begin 
-//            OutREnslant[0] <= 4'h1;
-//            OutREnslant[1] <= 4'h1;
-//            OutREnslant[2] <= 4'h1;
-//        end
-//     else  begin
-//            OutREnslant[0] <= REnslant;
-//            OutREnslant[1] <= OutREnslant[0];
-//            OutREnslant[2] <= OutREnslant[1];
-//           end
-
 assign  HDMIdata = (Sel) ? Sel_RGB :
                    (REnslant[0] && Mem_cont[0]) ? RGB4Pix[23:0] :
                    (REnslant[1] && Mem_cont[1]) ? RGB4Pix[47:24] :
@@ -226,17 +221,94 @@ assign  HDMIdata = (Sel) ? Sel_RGB :
 assign s_axis_video_tready = 1'b1;   
 
 
+
+reg [4:0] TClkCounter;
+reg [16:0] TRadd;
+reg Transmit;
+reg FrameTran;
+reg [23:0] FrameSR;
+reg HsyncTran;
+reg [16:0] NextLine;
+reg [15:0] HsyncSR;
+
+always @(posedge Cclk or negedge rstn)
+    if (!rstn) TClkCounter <= 5'h00;
+     else if (!Transmit) TClkCounter <= 5'h00;
+     else if (TClkCounter == 5'h18) TClkCounter <= 5'h00;
+     else TClkCounter <= TClkCounter + 1;
+     
+always @(posedge Cclk or negedge rstn)
+    if (!rstn) TRadd <= 17'h00000;
+     else if (!Transmit) TRadd <= 17'h00000;
+     else if (|FrameSR) TRadd <= 17'h00000;
+     else if (TClkCounter == 5'h17) TRadd <= TRadd + 1;
+     
+always @(posedge Cclk or negedge rstn)
+    if (!rstn) Transmit <= 1'b0;
+     else if ((HclkSR == 5'h03) && (CWadd == 20'h08000)) Transmit <= 1'b1;
+     else if (TRadd == 17'h12c00) Transmit <= 1'b0;
+
+always @(posedge Cclk or negedge rstn)
+    if (!rstn) FrameSR <= 24'h000000;
+     else if ((CWadd == 20'h07fff) &&  Reg_FraimSync) FrameSR <= FRAME1;
+     else if ((CWadd == 20'h07fff) && ~Reg_FraimSync) FrameSR <= FRAME0;
+     else if (TClkCounter == 5'h18) FrameSR <= {FrameSR[23:0],1'b0};
+
+always @(posedge Cclk or negedge rstn)
+    if (!rstn) NextLine <= 17'h0004f;
+     else if (!Transmit) NextLine <= 17'h0004f;
+     else if (TRadd == NextLine) NextLine <= NextLine + 17'h00050;
+
+always @(posedge Cclk or negedge rstn)
+    if (!rstn) HsyncSR <= 16'h0000;
+     else if (TRadd == NextLine) HsyncSR <= HSYNC;
+     else if (TClkCounter == 5'h18) HsyncSR <= {HsyncSR[14:0],1'b0};
+
+     
 reg [4:0] Reg_YTMem0;
 reg [4:0] Reg_YTMem1;
 reg [4:0] Reg_YTMem2;
 reg [4:0] Reg_YTMem3;
 always @(posedge Cclk)
-    Reg_YTMem0 <=  YMem0[HRadd[19:3]];
+    Reg_YTMem0 <=  YMem0[TRadd[16:1]];
+always @(posedge Cclk)      
+    Reg_YTMem1 <=  YMem1[TRadd[16:1]];
+always @(posedge Cclk)      
+    Reg_YTMem2 <=  YMem2[TRadd[16:1]];
+always @(posedge Cclk)      
+    Reg_YTMem3 <=  YMem3[TRadd[16:1]];
+
+reg [4:0] Reg_CTMem0;
+reg [4:0] Reg_CTMem1;
+reg [4:0] Reg_CTMem2;
+reg [4:0] Reg_CTMem3;
 always @(posedge Cclk)
-    Reg_YTMem1 <=  YMem1[HRadd[19:3]];
+    Reg_CTMem0 <=  CMem0[TRadd[16:1]];
 always @(posedge Cclk)
-    Reg_YTMem2 <=  YMem2[HRadd[19:3]];
+    Reg_CTMem1 <=  CMem1[TRadd[16:1]];
 always @(posedge Cclk)
-    Reg_YTMem3 <=  YMem3[HRadd[19:3]];
-  
+    Reg_CTMem2 <=  CMem2[TRadd[16:1]];
+always @(posedge Cclk)
+    Reg_CTMem3 <=  CMem3[TRadd[16:1]];
+    
+assign  Trans0Data = (!Transmit) ? 8'h00 :
+                     (|FrameSR)  ? (FrameSR[23]) ? 8'hff : 8'h01 :
+                     (|HsyncSR)  ? (HsyncSR[15]) ? 8'hff : 8'h01 :
+                     (TRadd[0])  ? {1'b0,Reg_CTMem0,2'b00} : {1'b0,Reg_YTMem0,2'b00};
+
+assign  Trans1Data = (!Transmit) ? 8'h00 :
+                     (|FrameSR)  ? (FrameSR[23]) ? 8'hff : 8'h01 :
+                     (|HsyncSR)  ? (HsyncSR[15]) ? 8'hff : 8'h01 :
+                     (TRadd[0])  ? {1'b0,Reg_CTMem1,2'b00} : {1'b0,Reg_YTMem1,2'b00};
+
+assign  Trans2Data = (!Transmit) ? 8'h00 :
+                     (|FrameSR)  ? (FrameSR[23]) ? 8'hff : 8'h01 :
+                     (|HsyncSR)  ? (HsyncSR[15]) ? 8'hff : 8'h01 :
+                     (TRadd[0])  ? {1'b0,Reg_CTMem2,2'b00} : {1'b0,Reg_YTMem2,2'b00};
+
+assign  Trans3Data = (!Transmit) ? 8'h00 :
+                     (|FrameSR)  ? (FrameSR[23]) ? 8'hff : 8'h01 :
+                     (|HsyncSR)  ? (HsyncSR[15]) ? 8'hff : 8'h01 :
+                     (TRadd[0])  ? {1'b0,Reg_CTMem3,2'b00} : {1'b0,Reg_YTMem3,2'b00};
+ 
 endmodule

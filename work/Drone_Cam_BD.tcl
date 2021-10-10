@@ -245,9 +245,6 @@ proc create_root_design { parentCell } {
 
   # Create ports
   set FCLK_CLK2_0 [ create_bd_port -dir O -type clk FCLK_CLK2_0 ]
-  set_property -dict [ list \
-   CONFIG.FREQ_HZ {1000000} \
- ] $FCLK_CLK2_0
   set GPIO_0 [ create_bd_port -dir O GPIO_0 ]
   set Mem_cont [ create_bd_port -dir I -from 3 -to 0 Mem_cont ]
   set Out_pHSync [ create_bd_port -dir O Out_pHSync ]
