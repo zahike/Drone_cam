@@ -23,8 +23,6 @@
 module MyYCbCr(
 input  wire clk ,
 input  wire rstn,
-input  wire Sel,
-input  wire [23 : 0] Sel_RGB    ,
 input  wire [23 : 0] s_axis_video_tdata    ,
 output wire s_axis_video_tready            ,
 input  wire s_axis_video_tvalid            ,
@@ -63,9 +61,9 @@ localparam CRGCONST = 7;
 localparam CRBCONST = 3;
 localparam CRRCONST = 16;
 
-wire [4:0] G = (Sel) ? Sel_RGB  [7:3] : s_axis_video_tdata  [7:3];
-wire [4:0] B = (Sel) ? Sel_RGB[15:11] : s_axis_video_tdata[15:11];
-wire [4:0] R = (Sel) ? Sel_RGB[23:19] : s_axis_video_tdata[23:19];
+wire [4:0] G =  s_axis_video_tdata  [7:3];
+wire [4:0] B =  s_axis_video_tdata[15:11];
+wire [4:0] R =  s_axis_video_tdata[23:19];
 
 reg [9:0] YG ;
 reg [9:0] YB ;

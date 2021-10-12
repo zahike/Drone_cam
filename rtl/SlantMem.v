@@ -24,9 +24,6 @@ module SlantMem(
 input Cclk,
 input rstn,
 
-input  wire Sel,
-input  wire [23 : 0] Sel_RGB    ,
-
 input [3:0] Mem_cont,
 
 output        s_axis_video_tready,
@@ -212,8 +209,7 @@ for (i=0;i<4;i=i+1) begin
     end
 endgenerate     
 
-assign  HDMIdata = (Sel) ? Sel_RGB :
-                   (REnslant[0] && Mem_cont[0]) ? RGB4Pix[23:0] :
+assign  HDMIdata = (REnslant[0] && Mem_cont[0]) ? RGB4Pix[23:0] :
                    (REnslant[1] && Mem_cont[1]) ? RGB4Pix[47:24] :
                    (REnslant[2] && Mem_cont[2]) ? RGB4Pix[71:48] :
                    (REnslant[3] && Mem_cont[3]) ? RGB4Pix[95:72] : 24'h000000;
