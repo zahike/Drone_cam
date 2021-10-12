@@ -67,7 +67,11 @@ inout cam_iic_sda_io,
   output [3:0] ja_p,
   output [3:0] ja_n,
   output [4:1] jb_p,
-  output [4:1] jb_n
+  output [4:1] jb_n,
+  output [4:1] jc_p,
+  output [4:1] jc_n,
+  inout [4:1] jd_n,
+  inout [4:1] jd_p
     );
 
 
@@ -96,6 +100,15 @@ wire [0:0] GPIO_0_0_tri_i;		//input [0:0] GPIO_0_0_tri_i;
 wire IIC_0_0_scl_i       ;		//input  IIC_0_0_scl_i;
 wire IIC_0_0_sda_i       ;		//input  IIC_0_0_sda_i;
 wire sccb_data_in_0      ;           //  input sccb_data_in_0;
+
+wire DDS_CSn_0;          //   output DDS_CSn_0;
+wire [7:0]DDS_DataIn_0;   //   input [7:0]DDS_DataIn_0;
+wire [7:0]DDS_DataOut_0; //   output [7:0]DDS_DataOut_0;
+wire DDS_IOup_0;         //   output DDS_IOup_0;
+wire DDS_PCLK_0;         //   output DDS_PCLK_0;
+wire DDS_RWn_0;          //   output DDS_RWn_0;
+wire DDS_ReadEn_0;       //   output DDS_ReadEn_0;
+wire DDS_Ref;            //   output DDS_Ref;
     
 Drone_Cam_BD Drone_Cam_BD_inst
 (
@@ -114,6 +127,16 @@ Drone_Cam_BD Drone_Cam_BD_inst
 .DDR_ras_n(DDR_ras_n),        //inout  DDR_ras_n
 .DDR_reset_n(DDR_reset_n),        //inout  DDR_reset_n
 .DDR_we_n(DDR_we_n),        //inout  DDR_we_n
+
+.DDS_CSn_0     (DDS_CSn_0    ),      //   output DDS_CSn_0;
+.DDS_DataIn_0  (DDS_DataIn_0 ),  //   input [7:0]DDS_DataIn_0;
+.DDS_DataOut_0 (DDS_DataOut_0), //   output [7:0]DDS_DataOut_0;
+.DDS_IOup_0    (DDS_IOup_0   ),      //   output DDS_IOup_0;
+.DDS_PCLK_0    (DDS_PCLK_0   ),      //   output DDS_PCLK_0;
+.DDS_RWn_0     (DDS_RWn_0    ),      //   output DDS_RWn_0;
+.DDS_ReadEn_0  (DDS_ReadEn_0 ),      //   output DDS_ReadEn_0;
+.DDS_Ref       (DDS_Ref      ),      //   output DDS_Ref;
+
 .FIXED_IO_ddr_vrn(FIXED_IO_ddr_vrn),        //inout  FIXED_IO_ddr_vrn
 .FIXED_IO_ddr_vrp(FIXED_IO_ddr_vrp),        //inout  FIXED_IO_ddr_vrp
 .FIXED_IO_mio(FIXED_IO_mio),        //inout [53:0] FIXED_IO_mio
@@ -152,6 +175,66 @@ Drone_Cam_BD Drone_Cam_BD_inst
  .RxByteClkHS(jb_p[4]),
  .PixelClk  (jb_n[4])  
  );
+
+//  output [3:0] ja_p,
+//  output [3:0] ja_n,
+//  output [4:1] jb_p,
+//  output [4:1] jb_n,
+//  output [4:1] jc_p,
+//  output [4:1] jc_n,
+//  inout [4:1] jd_n,
+//  inout [4:1] jd_p
+
+assign ja_n[3] = DDS_Ref;
+// assign JA[5] = ~rstn; // reset
+// assign JA[2] = 1'b0;  // PowerDown
+// assign JA[6] = RegIOup;  // IO_update
+// assign JA[3] = RegCS;  // CSB
+// assign JA[7] = RegRWn;  // RWn
+// assign JA[4] = RegPclk;  // PCLK
+// assign JA[8] = 1'b1;  // PAR
+// assign JB[1] = (!ReadData) ? RegData[7] : 1'bz;   
+// assign JB[5] = (!ReadData) ? RegData[6] : 1'bz;   
+// assign JB[2] = (!ReadData) ? RegData[5] : 1'bz;   
+// assign JB[6] = (!ReadData) ? RegData[4] : 1'bz;   
+// assign JB[3] = (!ReadData) ? RegData[3] : 1'bz;   
+// assign JB[7] = (!ReadData) ? RegData[2] : 1'bz;   
+// assign JB[4] = (!ReadData) ? RegData[1] : 1'bz;   
+// assign JB[8] = (!ReadData) ? RegData[0] : 1'bz;   
+
+//wire DDS_CSn_0;          //   output DDS_CSn_0;
+//wire [7:0]DDS_DataIn_0;   //   input [7:0]DDS_DataIn_0;
+//wire [7:0]DDS_DataOut_0; //   output [7:0]DDS_DataOut_0;
+//wire DDS_IOup_0;         //   output DDS_IOup_0;
+//wire DDS_PCLK_0;         //   output DDS_PCLK_0;
+//wire DDS_RWn_0;          //   output DDS_RWn_0;
+//wire DDS_ReadEn_0;       //   output DDS_ReadEn_0;
+//wire DDS_Ref;            //   output DDS_Ref;
+
+ assign jc_p[3] = ~rstn; // reset
+ assign jc_n[1] = 1'b0;  // PowerDown
+ assign jc_n[3] = DDS_IOup_0;  // IO_update
+ assign jc_p[2] = DDS_CSn_0;  // CSB
+ assign jc_p[4] = DDS_RWn_0;  // RWn
+ assign jc_n[2] = DDS_PCLK_0;  // PCLK
+ assign jc_n[4] = 1'b1;  // PAR
+ assign jd_p[1] = (!DDS_ReadEn_0) ? DDS_DataOut_0[7] : 1'bz;   
+ assign jd_p[3] = (!DDS_ReadEn_0) ? DDS_DataOut_0[6] : 1'bz;   
+ assign jd_n[1] = (!DDS_ReadEn_0) ? DDS_DataOut_0[5] : 1'bz;   
+ assign jd_n[3] = (!DDS_ReadEn_0) ? DDS_DataOut_0[4] : 1'bz;   
+ assign jd_p[2] = (!DDS_ReadEn_0) ? DDS_DataOut_0[3] : 1'bz;   
+ assign jd_p[4] = (!DDS_ReadEn_0) ? DDS_DataOut_0[2] : 1'bz;   
+ assign jd_n[2] = (!DDS_ReadEn_0) ? DDS_DataOut_0[1] : 1'bz;   
+ assign jd_n[4] = (!DDS_ReadEn_0) ? DDS_DataOut_0[0] : 1'bz;   
+
+assign DDS_DataIn_0[7] = jd_p[1];
+assign DDS_DataIn_0[6] = jd_p[3];
+assign DDS_DataIn_0[5] = jd_n[1];
+assign DDS_DataIn_0[4] = jd_n[3];
+assign DDS_DataIn_0[3] = jd_p[2];
+assign DDS_DataIn_0[2] = jd_p[4];
+assign DDS_DataIn_0[1] = jd_n[2];
+assign DDS_DataIn_0[0] = jd_n[4];
  
 assign ja_n[0]         = GPIO_0; 
 assign cam_gpio_tri_io = GPIO_0; 
