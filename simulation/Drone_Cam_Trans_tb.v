@@ -109,22 +109,6 @@ clkDiv clkDiv_inst(
  .m_axis_video_tlast   (Mm_axis_video_tlast )   ,
  .m_axis_video_tuser   (Mm_axis_video_tuser ) 
      );
-/*
-MyRGB MyRGB_inst(
-.clk (clk )                          ,
-.rstn(rstn)                          ,
-.s_axis_video_tdata   (Mm_axis_video_tdata )   ,
-.s_axis_video_tready  (Mm_axis_video_tready)   ,
-.s_axis_video_tvalid  (Mm_axis_video_tvalid)   ,
-.s_axis_video_tlast   (Mm_axis_video_tlast )   ,
-.s_axis_video_tuser   (Mm_axis_video_tuser )   ,
-.m_axis_video_tdata   (BRm_axis_video_tdata )   ,
-.m_axis_video_tvalid  (BRm_axis_video_tvalid)   ,
-.m_axis_video_tready  (BRm_axis_video_tready)   ,
-.m_axis_video_tlast   (BRm_axis_video_tlast )   ,
-.m_axis_video_tuser   (BRm_axis_video_tuser )   
-    );
- */ 
 
 wire HVsync                     ;                        // input HVsync,                      
 wire FraimSync;
@@ -134,6 +118,7 @@ wire [23 : 0] Out_pData;
 wire Out_pHSync;
 wire pVDE;
 
+wire  TransValid;
 wire [7:0] Trans0Data;
 wire [7:0] Trans1Data;
 wire [7:0] Trans2Data;
@@ -158,10 +143,79 @@ SlantMem SlantMem_inst(
 .pVDE               (pVDE               ),       // output        Out_pVDE  ,
 .HDMIdata           (HDMIdata_Slant     ),        // output [11:0] HDMIdata    
 
+.TransValid(TransValid),
 .Trans0Data(Trans0Data),//output [7:0] Trans0Data,
 .Trans1Data(Trans1Data),//output [7:0] Trans1Data,
 .Trans2Data(Trans2Data),//output [7:0] Trans2Data,
 .Trans3Data(Trans3Data) //output [7:0] Trans3Data,         
+    );
+    
+reg [3:0] Test;
+
+initial begin
+force  DDS_cont_inst.Send = 1'b1;
+force  DDS_cont_inst.WR = 1'b0;
+@(posedge rstn);
+Test = 4'h0;
+#100000;
+Test = 4'h1;
+#100000;
+Test = 4'h4;
+#100000;
+Test = 4'h6;
+#100000;
+end
+                                 
+wire         S_APB_0_axiclk     ;
+wire         S_APB_0_aresetn    ;
+wire  [31:0] S_APB_0_paddr      ;
+wire         S_APB_0_penable    ;
+wire  [31:0] S_APB_0_prdata     ;
+wire         S_APB_0_pready     ;
+wire         S_APB_0_psel       ;
+wire         S_APB_0_pslverr    ;
+wire  [31:0] S_APB_0_pwdata     ;
+wire         S_APB_0_pwrite     ;
+
+                                 
+wire DDS_PCLK                  ;
+wire DDS_IOup                  ;
+wire DDS_CSn                   ;
+wire DDS_RWn                   ;
+wire DDS_ReadEn                ;
+wire [7:0] DDS_DataOut         ;
+wire [7:0] DDS_DataIn          ;
+
+DDS_cont DDS_cont_inst(
+.clk (clk )                      ,
+.rstn(rstn)                      ,
+                          
+.S_APB_0_axiclk (S_APB_0_axiclk )    ,
+.S_APB_0_aresetn(S_APB_0_aresetn)    ,
+.S_APB_0_paddr  (S_APB_0_paddr  )    ,
+.S_APB_0_penable(S_APB_0_penable)    ,
+.S_APB_0_prdata (S_APB_0_prdata )    ,
+.S_APB_0_pready (S_APB_0_pready )    ,
+.S_APB_0_psel   (S_APB_0_psel   )    ,
+.S_APB_0_pslverr(S_APB_0_pslverr)    ,
+.S_APB_0_pwdata (S_APB_0_pwdata )    ,
+.S_APB_0_pwrite (S_APB_0_pwrite )    ,
+
+.Test(Test),
+
+.TransValid(TransValid)                ,
+.Trans0Data(Trans0Data)           ,
+.Trans1Data(Trans1Data)           ,
+.Trans2Data(Trans2Data)           ,
+.Trans3Data(Trans3Data)           ,
+                           
+.DDS_PCLK   (DDS_PCLK   ),
+.DDS_IOup   (DDS_IOup   ),
+.DDS_CSn    (DDS_CSn    ),
+.DDS_RWn    (DDS_RWn    ),
+.DDS_ReadEn (DDS_ReadEn ),
+.DDS_DataOut(DDS_DataOut),
+.DDS_DataIn (DDS_DataIn )
     );
 
 wire [31 : 0] Deb_Vsync_counter;

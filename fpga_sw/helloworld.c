@@ -51,6 +51,7 @@
 #include "SCCB.h"
 #define START_FREQ   0x100
 u32 *APB = XPAR_APB_M_0_BASEADDR;
+u32 *DDS = XPAR_APB_M_1_BASEADDR;
 
 int writeSCCB (int WriteData);
 int write4readSCCB (int WriteData);
@@ -64,6 +65,10 @@ int main()
 {
 	int freq;
 	int Hdata,Ldata,CamID;
+	int loop;
+	int Data;
+	int Add1,Add2;
+	int pll = 0;
     init_platform();
 
     xil_printf("Hello World\n\r");
@@ -88,6 +93,56 @@ int main()
 	} else {
 		xil_printf("Camera ID incorrect :(:(  Read %x \n\r",CamID);
 	}
+
+	xil_printf("Clear DDS \n\r");
+	for (int i=0x12;i<0x26;i=i+2){
+		Add1 = i << 24;
+		Add2 = i+1 << 8;
+	    DDS[2] = Add1+Add2;
+	    DDS[4] = 0x00000000;
+	    DDS[0] = 0x00000001;
+	}
+	xil_printf("Set DDS \n\r");
+   loop = 1;
+    DDS[2] = 0x04120514;
+    DDS[4] = 0x00000000;
+    DDS[0] = 0x00000001;
+    while (loop == 1){
+    	loop = DDS[1];
+    };
+    while (pll==0){
+		loop = 1;
+		DDS[2] = 0x04120514;
+		DDS[4] = 0x00000001;
+		DDS[0] = 0x00000001;
+		while (loop == 1){
+			loop = DDS[1];
+		};
+		Data = DDS[3];
+		if ((Data & 0x00010000) != 0) {
+			pll = 1;
+			};
+		xil_printf("Read Data %x\n\r",Data);
+    };
+    loop = 1;
+    DDS[2] = 0x06ff0713;
+    DDS[4] = 0x00000000;
+    DDS[0] = 0x00000001;
+    while (loop == 1){
+    	loop = DDS[1];
+    };
+    loop = 1;
+    DDS[2] = 0x0c000d42;
+    DDS[4] = 0x00000000;
+    DDS[0] = 0x00000001;
+    while (loop == 1){
+    	loop = DDS[1];
+    };
+	xil_printf(" DDS Confug \n\r");
+
+    DDS[4] = 0x00000002;
+
+
 
 	//[1]=0 System input clock from pad; Default read = 0x11
 	writeSCCB(0x78310311);

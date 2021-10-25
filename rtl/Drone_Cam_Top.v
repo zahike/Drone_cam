@@ -64,6 +64,7 @@ inout cam_iic_sda_io,
   output [2:0]hdmi_tx_data_p  ,
   input       sys_clock       ,
   input  [3:0] sw,
+  input  [3:0] btn,
   output [3:0] ja_p,
   output [3:0] ja_n,
   output [4:1] jb_p,
@@ -71,7 +72,8 @@ inout cam_iic_sda_io,
   output [4:1] jc_p,
   output [4:1] jc_n,
   inout [4:1] jd_n,
-  inout [4:1] jd_p
+  inout [4:1] jd_p,
+  output [8:1] je
     );
 
 
@@ -185,7 +187,8 @@ Drone_Cam_BD Drone_Cam_BD_inst
 //  inout [4:1] jd_n,
 //  inout [4:1] jd_p
 
-assign ja_n[3] = DDS_Ref;
+//assign ja_n[3] = DDS_Ref;
+assign je[8] = DDS_Ref;
 // assign JA[5] = ~rstn; // reset
 // assign JA[2] = 1'b0;  // PowerDown
 // assign JA[6] = RegIOup;  // IO_update
@@ -211,7 +214,7 @@ assign ja_n[3] = DDS_Ref;
 //wire DDS_ReadEn_0;       //   output DDS_ReadEn_0;
 //wire DDS_Ref;            //   output DDS_Ref;
 
- assign jc_p[3] = ~rstn; // reset
+ assign jc_p[3] = (btn[0]) ? 1'b1 : ~rstn; // reset
  assign jc_n[1] = 1'b0;  // PowerDown
  assign jc_n[3] = DDS_IOup_0;  // IO_update
  assign jc_p[2] = DDS_CSn_0;  // CSB

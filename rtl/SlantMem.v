@@ -34,10 +34,11 @@ input         s_axis_video_tlast ,
 
 output FraimSync,
 
-output [7:0] Trans0Data,
-output [7:0] Trans1Data,
-output [7:0] Trans2Data,
-output [7:0] Trans3Data,
+output  TransValid,
+output [5:0] Trans0Data,
+output [5:0] Trans1Data,
+output [5:0] Trans2Data,
+output [5:0] Trans3Data,
 
 input Hclk,
 
@@ -221,9 +222,9 @@ assign s_axis_video_tready = 1'b1;
 reg [4:0] TClkCounter;
 reg [16:0] TRadd;
 reg Transmit;
-reg FrameTran;
+//reg FrameTran;
 reg [23:0] FrameSR;
-reg HsyncTran;
+//reg HsyncTran;
 reg [16:0] NextLine;
 reg [15:0] HsyncSR;
 
@@ -286,25 +287,27 @@ always @(posedge Cclk)
     Reg_CTMem2 <=  CMem2[TRadd[16:1]];
 always @(posedge Cclk)
     Reg_CTMem3 <=  CMem3[TRadd[16:1]];
+
+assign  TransValid = (Transmit && (TClkCounter == 5'h00)) ? 1'b1 : 1'b0; 
     
-assign  Trans0Data = (!Transmit) ? 8'h00 :
-                     (|FrameSR)  ? (FrameSR[23]) ? 8'hff : 8'h01 :
-                     (|HsyncSR)  ? (HsyncSR[15]) ? 8'hff : 8'h01 :
-                     (TRadd[0])  ? {1'b0,Reg_CTMem0,2'b00} : {1'b0,Reg_YTMem0,2'b00};
+assign  Trans0Data = (!Transmit) ? 6'h00 :
+                     (|FrameSR)  ? (FrameSR[23]) ? 6'h3f : 6'h00 :
+                     (|HsyncSR)  ? (HsyncSR[15]) ? 6'h3f : 6'h00 :
+                     (TRadd[0])  ? {1'b0,Reg_CTMem0} : {1'b0,Reg_YTMem0};
 
-assign  Trans1Data = (!Transmit) ? 8'h00 :
-                     (|FrameSR)  ? (FrameSR[23]) ? 8'hff : 8'h01 :
-                     (|HsyncSR)  ? (HsyncSR[15]) ? 8'hff : 8'h01 :
-                     (TRadd[0])  ? {1'b0,Reg_CTMem1,2'b00} : {1'b0,Reg_YTMem1,2'b00};
+assign  Trans1Data = (!Transmit) ? 6'h00 :
+                     (|FrameSR)  ? (FrameSR[23]) ? 6'h3f : 6'h00 :
+                     (|HsyncSR)  ? (HsyncSR[15]) ? 6'h3f : 6'h00 :
+                     (TRadd[0])  ? {1'b0,Reg_CTMem1} : {1'b0,Reg_YTMem1};
 
-assign  Trans2Data = (!Transmit) ? 8'h00 :
-                     (|FrameSR)  ? (FrameSR[23]) ? 8'hff : 8'h01 :
-                     (|HsyncSR)  ? (HsyncSR[15]) ? 8'hff : 8'h01 :
-                     (TRadd[0])  ? {1'b0,Reg_CTMem2,2'b00} : {1'b0,Reg_YTMem2,2'b00};
+assign  Trans2Data = (!Transmit) ? 6'h00 :
+                     (|FrameSR)  ? (FrameSR[23]) ? 6'h3f : 6'h00 :
+                     (|HsyncSR)  ? (HsyncSR[15]) ? 6'h3f : 6'h00 :
+                     (TRadd[0])  ? {1'b0,Reg_CTMem2} : {1'b0,Reg_YTMem2};
 
-assign  Trans3Data = (!Transmit) ? 8'h00 :
-                     (|FrameSR)  ? (FrameSR[23]) ? 8'hff : 8'h01 :
-                     (|HsyncSR)  ? (HsyncSR[15]) ? 8'hff : 8'h01 :
-                     (TRadd[0])  ? {1'b0,Reg_CTMem3,2'b00} : {1'b0,Reg_YTMem3,2'b00};
+assign  Trans3Data = (!Transmit) ? 6'h00 :
+                     (|FrameSR)  ? (FrameSR[23]) ? 6'h3f : 6'h00 :
+                     (|HsyncSR)  ? (HsyncSR[15]) ? 6'h3f : 6'h00 :
+                     (TRadd[0])  ? {1'b0,Reg_CTMem3} : {1'b0,Reg_YTMem3};
  
 endmodule
