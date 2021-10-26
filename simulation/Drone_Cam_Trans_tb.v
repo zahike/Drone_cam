@@ -68,12 +68,12 @@ end
 wire SerilsClk;
 wire PixelClk ;
 
-clkDiv clkDiv_inst(
-.clk125(clk ),
-.rstn  (rstn),
-.SerilsClk(SerilsClk),
-.PixelClk (PixelClk )
-    );
+//clkDiv clkDiv_inst(
+//.clk125(clk ),
+//.rstn  (rstn),
+//.SerilsClk(SerilsClk),
+//.PixelClk (PixelClk )
+//    );
 
 
  wire [23 : 0] Ms_axis_video_tdata  = m_axis_video_tdata ; //input  wire [23 : 0] s_axis_video_tdata    , 
@@ -136,7 +136,7 @@ SlantMem SlantMem_inst(
 .s_axis_video_tlast (Mm_axis_video_tlast ),       // input         s_axis_video_tlast , 
 
 .FraimSync          (FraimSync          ),
-.Hclk               (PixelClk           ),       // input Hclk,                        
+.PixelClk           (PixelClk           ),       // input Hclk,                        
 
 .HVsync             (HVsync             ),       // input HVsync,                      
 .HMemRead           (HMemRead           ),       // input HMemRead,         

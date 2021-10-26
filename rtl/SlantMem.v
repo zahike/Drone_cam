@@ -33,6 +33,7 @@ input         s_axis_video_tuser ,
 input         s_axis_video_tlast ,
 
 output FraimSync,
+input[1:0]  FraimSel,
 
 output  TransValid,
 output [5:0] Trans0Data,
@@ -40,7 +41,8 @@ output [5:0] Trans1Data,
 output [5:0] Trans2Data,
 output [5:0] Trans3Data,
 
-input Hclk,
+
+output PixelClk,
 
 input HVsync  ,
 input HMemRead,
@@ -88,6 +90,8 @@ always @(posedge Cclk or negedge rstn)
 reg Reg_FraimSync;
 always @(posedge Cclk or negedge rstn) 
     if (!rstn) Reg_FraimSync <= 1'b0;
+     else if (FraimSel == 2'b11) Reg_FraimSync <= 1'b1;
+     else if (FraimSel == 2'b10) Reg_FraimSync <= 1'b0;
      else if (s_axis_video_tuser && s_axis_video_tvalid && Valid_odd) Reg_FraimSync <= 1'b1;
      else if (s_axis_video_tuser && s_axis_video_tvalid && ~Valid_odd) Reg_FraimSync <= 1'b0;
 assign FraimSync = Reg_FraimSync;
@@ -139,6 +143,24 @@ always @(posedge Cclk)
 always @(posedge Cclk)                                       
     if (WEnslant[3] && Del_Valid && Valid_odd) CMem3[CWadd[19:2]] <= DelCData;
 
+
+reg [2:0] Cnt_Div_Clk;
+always @(posedge Cclk or negedge rstn)
+    if (!rstn) Cnt_Div_Clk <= 3'b000;
+     else if (Cnt_Div_Clk == 3'b100) Cnt_Div_Clk <= 3'b000;
+     else Cnt_Div_Clk <= Cnt_Div_Clk + 1;
+reg Reg_Div_Clk;
+always @(posedge Cclk or negedge rstn)
+    if (!rstn) Reg_Div_Clk <= 1'b0;
+     else if (Cnt_Div_Clk == 3'b000)  Reg_Div_Clk <= 1'b1;
+     else if (Cnt_Div_Clk == 3'b010)  Reg_Div_Clk <= 1'b0;
+
+   BUFG BUFG_inst (
+      .O(PixelClk), // 1-bit output: Clock output
+      .I(Reg_Div_Clk)  // 1-bit input: Clock input
+   );
+wire Hclk = Reg_Div_Clk;
+
 reg [4:0] HclkSR;
 always @(posedge Cclk or negedge rstn)
     if (!rstn) HclkSR <= 5'h00;
@@ -149,6 +171,7 @@ always @(posedge Cclk or negedge rstn)
     if (!rstn) HRadd <= 20'h00000;
      else if (!HVsync) HRadd <= 20'h00000;
      else if ((HclkSR == 5'h18) && HMemRead) HRadd <= HRadd + 1;
+
 
 reg [4:0] Reg_YMem0;
 reg [4:0] Reg_YMem1;
