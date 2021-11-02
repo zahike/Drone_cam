@@ -30,24 +30,47 @@ rstn = 1'b0;
 HDMIrstn = 1'b0;
 #100;
 rstn = 1'b1;
-//#1000000;
+#2500000;
 #300;
 HDMIrstn = 1'b1;
 end
 always #4 clk = ~clk;
 
-wire       m_axis_video_tready;   // output        s_axis_video_tready, 
-wire [23:0] m_axis_video_tdata ;   // input  [23:0] s_axis_video_tdata , 
-reg        m_axis_video_tvalid;   // input         s_axis_video_tvalid, 
-reg        m_axis_video_tuser ;   // input         s_axis_video_tuser , 
-reg        m_axis_video_tlast ;   // input         s_axis_video_tlast , 
+wire        m_axis_video_tready;   // output        s_axis_video_tready, 
+wire [31:0] m_axis_video_tdata ;   // input  [23:0] s_axis_video_tdata , 
+reg         m_axis_video_tvalid;   // input         s_axis_video_tvalid, 
+reg         m_axis_video_tuser ;   // input         s_axis_video_tuser , 
+reg         m_axis_video_tlast ;   // input         s_axis_video_tlast , 
 
-reg [17:0] data;
+reg [5:0] Gdata;
 always @(posedge clk or negedge rstn)
-    if (!rstn) data <= 18'h00000;
-     else if (m_axis_video_tvalid) data <= data + 1;
-assign m_axis_video_tdata = {data[17:12],2'b00,data[11:6],2'b00,data[5:0],2'b00};      
-//assign m_axis_video_tdata = data;      
+    if (!rstn) Gdata <= 6'h00;
+     else if (m_axis_video_tuser) Gdata <= 6'h00;
+     else if (m_axis_video_tvalid) Gdata <= Gdata + 1;
+wire [5:0] Bdata;     
+wire [5:0] Rdata;     
+//assign m_axis_video_tdata = {2'b00,Rdata,5'h00,Bdata,5'h00,Gdata,5'h00};      
+//assign m_axis_video_tdata = data;     
+
+
+SyntPic SyntPic_inst(
+.clk (clk ),
+.rstn(rstn),
+
+.SelStat(1'b1),
+
+.s_axis_video_tdata  (32'h00000000)       ,
+.s_axis_video_tready (m_axis_video_tready),
+.s_axis_video_tvalid (m_axis_video_tvalid),
+.s_axis_video_tlast  (m_axis_video_tlast) ,
+.s_axis_video_tuser  (m_axis_video_tuser) ,
+.m_axis_video_tdata  (m_axis_video_tdata) ,
+.m_axis_video_tvalid ()                   ,
+.m_axis_video_tready (1'b1)               ,
+.m_axis_video_tlast  ()                   ,
+.m_axis_video_tuser  ()     
+    );
+ 
 initial begin 
 m_axis_video_tvalid = 0;   // input         s_axis_video_tvalid, 
 m_axis_video_tuser  = 0;   // input         s_axis_video_tuser , 
@@ -57,7 +80,9 @@ m_axis_video_tlast  = 0;   // input         s_axis_video_tlast ,
 repeat (3)begin 
         wrLine(1);
         repeat (479) wrLine(0);
-        repeat (500000) @(posedge clk);
+//        repeat (1000000) @(posedge clk);
+        #4620608;
+        @(posedge clk);
     end
 #10000000;    
 $finish;    
@@ -66,17 +91,10 @@ end
 
 
 wire SerilsClk;
-wire PixelClk ;
+wire TxPixelClk ;
+wire RxPixelClk ;
 
-//clkDiv clkDiv_inst(
-//.clk125(clk ),
-//.rstn  (rstn),
-//.SerilsClk(SerilsClk),
-//.PixelClk (PixelClk )
-//    );
-
-
- wire [23 : 0] Ms_axis_video_tdata  = m_axis_video_tdata ; //input  wire [23 : 0] s_axis_video_tdata    , 
+ wire [31 : 0] Ms_axis_video_tdata  = m_axis_video_tdata ; //input  wire [23 : 0] s_axis_video_tdata    , 
  wire          Ms_axis_video_tready    ; //output wire s_axis_video_tready            , 
  wire          Ms_axis_video_tvalid = m_axis_video_tvalid ; //input  wire s_axis_video_tvalid            , 
  wire          Ms_axis_video_tlast  = m_axis_video_tlast ; //input  wire s_axis_video_tlast             , 
@@ -86,13 +104,7 @@ wire PixelClk ;
  wire          Mm_axis_video_tready   ;// = 1'b1; //input  wire m_axis_video_tready            , 
  wire          Mm_axis_video_tlast    ; //output wire m_axis_video_tlast             , 
  wire          Mm_axis_video_tuser    ; //output wire m_axis_video_tuser               
- 
-// wire [23 : 0] BRm_axis_video_tdata    ; //output wire [23 : 0] m_axis_video_tdata    , 
-// wire          BRm_axis_video_tvalid   ; //output wire m_axis_video_tvalid            , 
-// wire          BRm_axis_video_tready = 1'b1; //input  wire m_axis_video_tready            , 
-// wire          BRm_axis_video_tlast    ; //output wire m_axis_video_tlast             , 
-// wire          BRm_axis_video_tuser    ; //output wire m_axis_video_tuser               
- 
+  
 // MyYCbCr
  MyYCbCr MyYCbCr_inst(
  .clk (clk )                          ,
@@ -111,9 +123,11 @@ wire PixelClk ;
      );
 
 wire HVsync                     ;                        // input HVsync,                      
-wire FraimSync;
+wire TxFraimSync;
+wire RxFraimSync;
 wire HMemRead                   ;                      // input HMemRead,                    
-wire  [23:0] HDMIdata_Slant     ;   // output [11:0] HDMIdata             
+wire  [23:0] TxHDMIdata_Slant     ;   // output [11:0] HDMIdata             
+wire  [23:0] RxHDMIdata_Slant     ;   // output [11:0] HDMIdata             
 wire [23 : 0] Out_pData;
 wire Out_pHSync;
 wire pVDE;
@@ -135,13 +149,13 @@ SlantMem SlantMem_inst(
 .s_axis_video_tuser (Mm_axis_video_tuser ),       // input         s_axis_video_tuser , 
 .s_axis_video_tlast (Mm_axis_video_tlast ),       // input         s_axis_video_tlast , 
 
-.FraimSync          (FraimSync          ),
-.PixelClk           (PixelClk           ),       // input Hclk,                        
+.FraimSync          (TxFraimSync          ),
+.PixelClk           (TxPixelClk           ),       // input Hclk,                        
 
 .HVsync             (HVsync             ),       // input HVsync,                      
 .HMemRead           (HMemRead           ),       // input HMemRead,         
 .pVDE               (pVDE               ),       // output        Out_pVDE  ,
-.HDMIdata           (HDMIdata_Slant     ),        // output [11:0] HDMIdata    
+.HDMIdata           (TxHDMIdata_Slant     ),        // output [11:0] HDMIdata    
 
 .TransValid(TransValid),
 .Trans0Data(Trans0Data),//output [7:0] Trans0Data,
@@ -149,9 +163,8 @@ SlantMem SlantMem_inst(
 .Trans2Data(Trans2Data),//output [7:0] Trans2Data,
 .Trans3Data(Trans3Data) //output [7:0] Trans3Data,         
     );
-    
+/*    
 reg [3:0] Test;
-
 initial begin
 force  DDS_cont_inst.Send = 1'b1;
 force  DDS_cont_inst.WR = 1'b0;
@@ -217,23 +230,24 @@ DDS_cont DDS_cont_inst(
 .DDS_DataOut(DDS_DataOut),
 .DDS_DataIn (DDS_DataIn )
     );
-
-wire [31 : 0] Deb_Vsync_counter;
-wire [15 : 0] Deb_Hsync_counter;
-wire [15 : 0] Deb_Line_counter;
+*/
+reg SelHDMI;
+initial SelHDMI = 1'b1;
+always @(TxFraimSync) SelHDMI = ~SelHDMI;
   HDMIdebug HDMIdebug_inst (
-    .clk(PixelClk),
+    .Txclk(TxPixelClk),
+    .Rxclk(RxPixelClk),
     .rstn(HDMIrstn),
+    .SelHDMI(SelHDMI),
     .Out_pData(Out_pData),
     .Out_pVSync(HVsync),
     .Out_pHSync(Out_pHSync),
     .Out_pVDE(pVDE),
-    .FraimSync(FraimSync),
+    .TxFraimSync(TxFraimSync),
+    .RxFraimSync(RxFraimSync),
     .Mem_Read(HMemRead),
-    .Mem_Data(HDMIdata_Slant),
-    .Deb_Vsync_counter(Deb_Vsync_counter),
-    .Deb_Hsync_counter(Deb_Hsync_counter),
-    .Deb_Line_counter(Deb_Line_counter)
+    .TxMem_Data(TxHDMIdata_Slant),
+    .RxMem_Data(RxHDMIdata_Slant)
   );
 
 SlantReceiver SlantReceiver_inst(
@@ -243,7 +257,20 @@ SlantReceiver SlantReceiver_inst(
 .Receive0Data(Trans0Data),
 .Receive1Data(Trans1Data),
 .Receive2Data(Trans2Data),
-.Receive3Data(Trans3Data)
+.Receive3Data(Trans3Data),
+
+.Mem_cont(4'hf),
+
+.FraimSync(RxFraimSync),
+.FraimSel(2'b00),
+
+.PixelClk(RxPixelClk),
+
+.HVsync             (HVsync             ),       // input HVsync,                      
+.HMemRead           (HMemRead           ),       // input HMemRead,         
+.pVDE               (pVDE               ),       // output        Out_pVDE  ,
+.HDMIdata           (RxHDMIdata_Slant)        // output [11:0] HDMIdata    
+
     );
 
 task wr4fix;
