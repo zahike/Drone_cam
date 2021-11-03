@@ -93,7 +93,7 @@ int main()
 	} else {
 		xil_printf("Camera ID incorrect :(:(  Read %x \n\r",CamID);
 	}
-
+/*
 	xil_printf("Clear DDS \n\r");
 	for (int i=0x12;i<0x26;i=i+2){
 		Add1 = i << 24;
@@ -141,7 +141,7 @@ int main()
 	xil_printf(" DDS Confug \n\r");
 
     DDS[4] = 0x00000002;
-
+*/
 
 
 	//[1]=0 System input clock from pad; Default read = 0x11

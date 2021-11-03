@@ -131,15 +131,15 @@ always @(posedge clk or negedge rstn)
 always @(posedge clk or negedge rstn)
     if (!rstn) Frame0_nextLine <= 18'h0009e;
      else if (FrameEven || FrameAdd) Frame0_nextLine <= 18'h0009e;    
-     else if (HSync) Frame0_nextLine <= Frame0_nextLine + 18'h000a0;    
+     else if ((BitTime0Counter == 8'h00) && HSync) Frame0_nextLine <= Frame0_nextLine + 18'h000a0;    
 always @(posedge clk or negedge rstn)
     if (!rstn) RXadd0 <= 18'h00000;
      else if (FrameEven || FrameAdd) RXadd0 <= 18'h00000;
-     else if (HSync) RXadd0 <= Frame0_nextLine;
+     else if ((BitTime0Counter == 8'h16) && HSync) RXadd0 <= Frame0_nextLine;
      else if (BitTime0Counter == 8'h16) RXadd0 <= RXadd0 + 1;
      
 reg [4:0] YMem0 [0:38399]; // 95ff
-//reg [4:0] YMem0 [0:63]; // 95ff
+//reg [4:0] YMem0 [0:127]; // 95ff
 //reg [4:0] YMem1 [0:38399];
 //reg [4:0] YMem2 [0:38399];
 //reg [4:0] YMem3 [0:38399];
@@ -152,7 +152,7 @@ always @(posedge clk)
 //always @(posedge Cclk)                                       
 //    if (WEnslant[3] && Del_Valid && Valid_odd) YMem3[CWadd[19:2]] <= DelYData;
 reg [4:0] CMem0 [0:38399];
-//reg [4:0] CMem0 [0:63];
+//reg [4:0] CMem0 [0:127];
 //reg [4:0] CMem1 [0:38399];
 //reg [4:0] CMem2 [0:38399];
 //reg [4:0] CMem3 [0:38399];

@@ -272,7 +272,22 @@ SlantReceiver SlantReceiver_inst(
 .HDMIdata           (RxHDMIdata_Slant)        // output [11:0] HDMIdata    
 
     );
+////////////////////////////// mem test //////////////////////////////
+reg [4:0] Txmem[0:38399];
+reg [3:0] TxWEnslant;
+reg       TxDel_Valid;
+reg       TxValid_odd;
+reg [4:0] TXDelYData;
+//(WEnslant[0] && Del_Valid && Valid_odd)
 
+reg [4:0]  Rxmem[0:38399];
+reg        RxFrame0_received;
+reg [7:0]  RxBitTime0Counter;
+reg [17:0] RXadd0;
+reg [5:0]  RxReceive0Data;
+//if (Frame0_received && (BitTime0Counter == 8'h14) && !RXadd0[0]) YMem0[RXadd0[17:1]] <= Receive0Data;
+
+////////////////////////////// End Of mem test //////////////////////////////
 task wr4fix;
 begin 
 m_axis_video_tvalid = 1'b1;   

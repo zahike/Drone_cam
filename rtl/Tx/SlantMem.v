@@ -229,6 +229,10 @@ always @(posedge Cclk or negedge rstn)
                                                   Reg_CMem3,3'b000,Reg_CMem2,3'b000,Reg_YMem2,3'b000,
                                                   Reg_CMem1,3'b000,Reg_CMem0,3'b000,Reg_YMem1,3'b000,
                                                   Reg_CMem1,3'b000,Reg_CMem0,3'b000,Reg_YMem0,3'b000};
+//     else if (Cnt_Div_Clk == 3'b011) YCbCr4Pix <= {16'h0000,Reg_YMem3,3'b000,
+//                                                   16'h0000,Reg_YMem2,3'b000,
+//                                                   16'h0000,Reg_YMem1,3'b000,
+//                                                   16'h0000,Reg_YMem0,3'b000};
 
 wire [95:0] RGB4Pix;
 
