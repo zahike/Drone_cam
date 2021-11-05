@@ -28,7 +28,7 @@ input wire [5:0] ReceiveData,
 
 output wire WriteRxY,
 output wire WriteRxC,
-output wire [17:0] WriteRxAdd,
+output wire [16:0] WriteRxAdd,
 
 output wire FrameEven ,        
 output wire FrameAdd  ,        
@@ -128,6 +128,6 @@ always @(posedge clk or negedge rstn)
 
 assign WriteRxY   = Frame0_received && (BitTime0Counter == 8'h14) && !RXadd0[0];
 assign WriteRxC   = Frame0_received && (BitTime0Counter == 8'h14) &&  RXadd0[0];
-assign WriteRxAdd = RXadd0;
+assign WriteRxAdd = RXadd0[17:1];
     
 endmodule

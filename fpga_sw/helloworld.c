@@ -51,7 +51,7 @@
 #include "SCCB.h"
 #define START_FREQ   0x100
 u32 *APB = XPAR_APB_M_0_BASEADDR;
-u32 *DDS = XPAR_APB_M_1_BASEADDR;
+//u32 *DDS = XPAR_APB_M_1_BASEADDR;
 
 int writeSCCB (int WriteData);
 int write4readSCCB (int WriteData);

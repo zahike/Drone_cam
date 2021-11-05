@@ -221,14 +221,23 @@ always @(posedge Cclk or negedge rstn)
      else if ((Cnt_Div_Clk == 3'b001) && !HMemRead && Del_HMemRead) REnslant <= {REnslant[0],REnslant[3:1]};
      else if ((Cnt_Div_Clk == 3'b000) && HMemRead && !HRadd[0]) REnslant <= {REnslant[2:0],REnslant[3]};
 
+wire [4:0] Reg_Cont_YMem0 = (Mem_cont[0]) ? Reg_YMem0 : 5'h00;
+wire [4:0] Reg_Cont_YMem1 = (Mem_cont[1]) ? Reg_YMem1 : 5'h00;
+wire [4:0] Reg_Cont_YMem2 = (Mem_cont[2]) ? Reg_YMem2 : 5'h00;
+wire [4:0] Reg_Cont_YMem3 = (Mem_cont[3]) ? Reg_YMem3 : 5'h00;
+wire [4:0] Reg_Cont_CMem0 = (Mem_cont[0]) ? Reg_CMem0 : 5'h10;
+wire [4:0] Reg_Cont_CMem1 = (Mem_cont[1]) ? Reg_CMem1 : 5'h10;
+wire [4:0] Reg_Cont_CMem2 = (Mem_cont[2]) ? Reg_CMem2 : 5'h10;
+wire [4:0] Reg_Cont_CMem3 = (Mem_cont[3]) ? Reg_CMem3 : 5'h10;
+
 reg [95:0] YCbCr4Pix;
 always @(posedge Cclk or negedge rstn)
     if (!rstn) YCbCr4Pix <= {96{1'b0}};
  //    else if ((Cnt_Div_Clk == 3'b011) && (HRadd[2:0] == 3'b000)) YCbCr4Pix <= {Reg_CMem3,3'b000,Reg_CMem2,3'b000,Reg_YMem3,3'b000,
-     else if (Cnt_Div_Clk == 3'b011) YCbCr4Pix <= {Reg_CMem3,3'b000,Reg_CMem2,3'b000,Reg_YMem3,3'b000,
-                                                  Reg_CMem3,3'b000,Reg_CMem2,3'b000,Reg_YMem2,3'b000,
-                                                  Reg_CMem1,3'b000,Reg_CMem0,3'b000,Reg_YMem1,3'b000,
-                                                  Reg_CMem1,3'b000,Reg_CMem0,3'b000,Reg_YMem0,3'b000};
+     else if (Cnt_Div_Clk == 3'b011) YCbCr4Pix <= {Reg_Cont_CMem3,3'b000,Reg_Cont_CMem2,3'b000,Reg_Cont_YMem3,3'b000,
+                                                   Reg_Cont_CMem3,3'b000,Reg_Cont_CMem2,3'b000,Reg_Cont_YMem2,3'b000,
+                                                   Reg_Cont_CMem1,3'b000,Reg_Cont_CMem0,3'b000,Reg_Cont_YMem1,3'b000,
+                                                   Reg_Cont_CMem1,3'b000,Reg_Cont_CMem0,3'b000,Reg_Cont_YMem0,3'b000};
 //     else if (Cnt_Div_Clk == 3'b011) YCbCr4Pix <= {16'h0000,Reg_YMem3,3'b000,
 //                                                   16'h0000,Reg_YMem2,3'b000,
 //                                                   16'h0000,Reg_YMem1,3'b000,
@@ -250,10 +259,14 @@ for (i=0;i<4;i=i+1) begin
     end
 endgenerate     
 
-assign  HDMIdata = (REnslant[0] && Mem_cont[0]) ? RGB4Pix[23:0] :
-                   (REnslant[1] && Mem_cont[1]) ? RGB4Pix[47:24] :
-                   (REnslant[2] && Mem_cont[2]) ? RGB4Pix[71:48] :
-                   (REnslant[3] && Mem_cont[3]) ? RGB4Pix[95:72] : 24'h000000;
+//assign  HDMIdata = (REnslant[0] && Mem_cont[0]) ? RGB4Pix[23:0] :
+//                   (REnslant[1] && Mem_cont[1]) ? RGB4Pix[47:24] :
+//                   (REnslant[2] && Mem_cont[2]) ? RGB4Pix[71:48] :
+//                   (REnslant[3] && Mem_cont[3]) ? RGB4Pix[95:72] : 24'h000000;
+assign  HDMIdata = (REnslant[0]) ? RGB4Pix[23:0] :
+                   (REnslant[1]) ? RGB4Pix[47:24] :
+                   (REnslant[2]) ? RGB4Pix[71:48] :
+                   (REnslant[3]) ? RGB4Pix[95:72] : 24'h000000;
   
 assign s_axis_video_tready = 1'b1;   
 
@@ -334,6 +347,18 @@ always @(posedge Cclk or negedge rstn)
   if (!rstn) Reg_CTMem3 <= 5'h00;
    else if (Cnt_Div_Clk == 3'b100) Reg_CTMem3 <=  Reg_CMem3;
 
+
+wire [4:0] Reg_cont_YTMem0 = (Mem_cont[0]) ? Reg_YTMem0 : 5'h00;
+wire [4:0] Reg_cont_YTMem1 = (Mem_cont[1]) ? Reg_YTMem1 : 5'h00;
+wire [4:0] Reg_cont_YTMem2 = (Mem_cont[2]) ? Reg_YTMem2 : 5'h00;
+wire [4:0] Reg_cont_YTMem3 = (Mem_cont[3]) ? Reg_YTMem3 : 5'h00;
+wire [4:0] Reg_cont_CTMem0 = (Mem_cont[0]) ? Reg_CTMem0 : 5'h10;
+wire [4:0] Reg_cont_CTMem1 = (Mem_cont[1]) ? Reg_CTMem1 : 5'h10;
+wire [4:0] Reg_cont_CTMem2 = (Mem_cont[2]) ? Reg_CTMem2 : 5'h10;
+wire [4:0] Reg_cont_CTMem3 = (Mem_cont[3]) ? Reg_CTMem3 : 5'h10;
+
+
+
 reg [1:0] switchYC;
 always @(posedge Cclk or negedge rstn) 
     if (!rstn) switchYC <= 2'b00;
@@ -343,22 +368,22 @@ assign  TransValid = (Transmit && (TClkCounter == 5'h00)) ? 1'b1 : 1'b0;
 assign  Trans0Data = (!Transmit) ? 6'h00 :
                      (|FrameSR)  ? (FrameSR[23]) ? 6'h3f : 6'h00 :
                      (|HsyncSR)  ? (HsyncSR[7]) ? 6'h3f : 6'h00 :
-                     (switchYC[1])  ? {1'b0,Reg_CTMem0} : {1'b0,Reg_YTMem0};
+                     (switchYC[1])  ? {1'b0,Reg_cont_CTMem0} : {1'b0,Reg_cont_YTMem0};
 
 assign  Trans1Data = (!Transmit) ? 6'h00 :
                      (|FrameSR)  ? (FrameSR[23]) ? 6'h3f : 6'h00 :
                      (|HsyncSR)  ? (HsyncSR[7]) ? 6'h3f : 6'h00 :
-                     (switchYC[1])  ? {1'b0,Reg_CTMem1} : {1'b0,Reg_YTMem1};
+                     (switchYC[1])  ? {1'b0,Reg_cont_CTMem1} : {1'b0,Reg_cont_YTMem1};
 
 assign  Trans2Data = (!Transmit) ? 6'h00 :
                      (|FrameSR)  ? (FrameSR[23]) ? 6'h3f : 6'h00 :
                      (|HsyncSR)  ? (HsyncSR[7]) ? 6'h3f : 6'h00 :
-                     (switchYC[1])  ? {1'b0,Reg_CTMem2} : {1'b0,Reg_YTMem2};
+                     (switchYC[1])  ? {1'b0,Reg_cont_CTMem2} : {1'b0,Reg_cont_YTMem2};
 
 assign  Trans3Data = (!Transmit) ? 6'h00 :
                      (|FrameSR)  ? (FrameSR[23]) ? 6'h3f : 6'h00 :
                      (|HsyncSR)  ? (HsyncSR[7]) ? 6'h3f : 6'h00 :
-                     (switchYC[1])  ? {1'b0,Reg_CTMem3} : {1'b0,Reg_YTMem3};
+                     (switchYC[1])  ? {1'b0,Reg_cont_CTMem3} : {1'b0,Reg_cont_YTMem3};
                      
 reg [11:0] Reg_CamLineCount;
 always @(posedge Cclk or negedge rstn)
