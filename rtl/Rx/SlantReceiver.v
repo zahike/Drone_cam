@@ -33,8 +33,6 @@ output wire [3:0] FrameEven ,
 output wire [3:0] FrameAdd  ,        
 output wire [3:0] HSync     ,       
 
-input [3:0] Mem_cont,
-
 output FraimSync,
 input[1:0]  FraimSel,
 
@@ -88,28 +86,28 @@ endgenerate
 
 reg [4:0] YMem0 [0:38399]; // 95ff
 reg [4:0] YMem1 [0:38399];
-//reg [4:0] YMem2 [0:38399];
-//reg [4:0] YMem3 [0:38399];
+reg [4:0] YMem2 [0:38399];
+reg [4:0] YMem3 [0:38399];
 always @(posedge clk)
     if (WriteRxY[0]) YMem0[WriteRxAdd[0]] <= Receive0Data;
 always @(posedge clk)
     if (WriteRxY[1]) YMem1[WriteRxAdd[1]] <= Receive1Data;
-//always @(posedge Cclk)                                       
-//    if (WEnslant[2] && Del_Valid && Valid_odd) YMem2[CWadd[19:2]] <= DelYData;
-//always @(posedge Cclk)                                       
-//    if (WEnslant[3] && Del_Valid && Valid_odd) YMem3[CWadd[19:2]] <= DelYData;
+always @(posedge clk)
+    if (WriteRxY[2]) YMem2[WriteRxAdd[2]] <= Receive2Data;
+always @(posedge clk)
+    if (WriteRxY[3]) YMem3[WriteRxAdd[3]] <= Receive3Data;
 reg [4:0] CMem0 [0:38399];
 reg [4:0] CMem1 [0:38399];
-//reg [4:0] CMem2 [0:38399];
-//reg [4:0] CMem3 [0:38399];
+reg [4:0] CMem2 [0:38399];
+reg [4:0] CMem3 [0:38399];
 always @(posedge clk)
     if (WriteRxC[0]) CMem0[WriteRxAdd[0]] <= Receive0Data;
 always @(posedge clk)
     if (WriteRxC[1]) CMem1[WriteRxAdd[1]] <= Receive1Data;
-//always @(posedge Cclk)                                       
-//    if (WEnslant[2] && Del_Valid && Valid_odd) CMem2[CWadd[19:2]] <= DelCData;
-//always @(posedge Cclk)                                       
-//    if (WEnslant[3] && Del_Valid && Valid_odd) CMem3[CWadd[19:2]] <= DelCData;
+always @(posedge clk)
+    if (WriteRxC[2]) CMem2[WriteRxAdd[2]] <= Receive2Data;
+always @(posedge clk)
+    if (WriteRxC[3]) CMem3[WriteRxAdd[3]] <= Receive3Data;
 
 reg Reg_FraimSync;
 always @(posedge clk or negedge rstn) 
@@ -131,40 +129,38 @@ always @(posedge clk or negedge rstn)
      else if (Cnt_Div_Clk == 3'b000)  Reg_Div_Clk <= 1'b1;
      else if (Cnt_Div_Clk == 3'b010)  Reg_Div_Clk <= 1'b0;
 
-//   BUFG BUFG_inst (
-//      .O(PixelClk), // 1-bit output: Clock output
-//      .I(Reg_Div_Clk)  // 1-bit input: Clock input
-//   );
-assign PixelClk = Reg_Div_Clk;
+   BUFG BUFG_inst (
+      .O(PixelClk), // 1-bit output: Clock output
+      .I(Reg_Div_Clk)  // 1-bit input: Clock input
+   );
+//assign PixelClk = Reg_Div_Clk;
 
 reg [19:0] HRadd;
 
 reg [4:0] Reg_YMem0;
 reg [4:0] Reg_YMem1;
-wire [4:0] Reg_YMem2 = 5'h00;
-wire [4:0] Reg_YMem3 = 5'h00;
-//reg [4:0] Reg_YMem2;
-//reg [4:0] Reg_YMem3;
+reg [4:0] Reg_YMem2;
+reg [4:0] Reg_YMem3;
 always @(posedge clk)
     Reg_YMem0 <=  YMem0[HRadd[19:3]];
 always @(posedge clk)
     Reg_YMem1 <=  YMem1[HRadd[19:3]];
-//always @(posedge Cclk)
-//    Reg_YMem2 <=  YMem2[readMemAdd];
-//always @(posedge Cclk)
-//    Reg_YMem3 <=  YMem3[readMemAdd];
+always @(posedge clk)
+    Reg_YMem2 <=  YMem2[HRadd[19:3]];
+always @(posedge clk)
+    Reg_YMem3 <=  YMem3[HRadd[19:3]];
 reg [4:0] Reg_CMem0;
 reg [4:0] Reg_CMem1;
-wire [4:0] Reg_CMem2 = 5'h10; 
-wire [4:0] Reg_CMem3 = 5'h10; 
+reg [4:0] Reg_CMem2; 
+reg [4:0] Reg_CMem3; 
 always @(posedge clk)
     Reg_CMem0 <=  CMem1[HRadd[19:3]];
 always @(posedge clk)
     Reg_CMem1 <=  CMem1[HRadd[19:3]];
-//always @(posedge Cclk)
-//    Reg_CMem2 <=  CMem2[readMemAdd];
-//always @(posedge Cclk)
-//    Reg_CMem3 <=  CMem3[readMemAdd];
+always @(posedge clk)
+    Reg_CMem2 <=  CMem2[HRadd[19:3]];
+always @(posedge clk)
+    Reg_CMem3 <=  CMem3[HRadd[19:3]];
 
 always @(posedge clk or negedge rstn)
     if (!rstn) HRadd <= 20'h00001;
@@ -186,9 +182,9 @@ reg [95:0] YCbCr4Pix;
 always @(posedge clk or negedge rstn)
     if (!rstn) YCbCr4Pix <= {96{1'b0}};
      else if (Cnt_Div_Clk == 3'b011) YCbCr4Pix <= {Reg_CMem3,3'b000,Reg_CMem2,3'b000,Reg_YMem3,3'b000,
-                                                  Reg_CMem3,3'b000,Reg_CMem2,3'b000,Reg_YMem2,3'b000,
-                                                  Reg_CMem1,3'b000,Reg_CMem0,3'b000,Reg_YMem1,3'b000,
-                                                  Reg_CMem1,3'b000,Reg_CMem0,3'b000,Reg_YMem0,3'b000};
+                                                   Reg_CMem3,3'b000,Reg_CMem2,3'b000,Reg_YMem2,3'b000,
+                                                   Reg_CMem1,3'b000,Reg_CMem0,3'b000,Reg_YMem1,3'b000,
+                                                   Reg_CMem1,3'b000,Reg_CMem0,3'b000,Reg_YMem0,3'b000};
 wire [95:0] RGB4Pix;
 generate 
 for (i=0;i<4;i=i+1) begin
