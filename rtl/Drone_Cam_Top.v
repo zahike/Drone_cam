@@ -64,6 +64,14 @@ inout cam_iic_sda_io,
   input       sys_clock       ,
   input  [3:0] sw,
   input  [3:0] btn,
+  output [3:0] led, //[0] }]; #IO_L23P_T3_35 Sch=led[0]  
+  output led5_b,    // }]; #IO_L20P_T3_13 Sch=led5_b
+  output led5_g,    // }]; #IO_L19P_T3_13 Sch=led5_g
+  output led5_r,    // }]; #IO_L18N_T2_13 Sch=led5_r
+  output led6_b,    // }]; #IO_L8P_T1_AD10P_35 Sch=led6_b
+  output led6_g,    // }]; #IO_L6N_T0_VREF_35 Sch=led6_g
+  output led6_r,    // }]; #IO_L18P_T2_34 Sch=led6_r
+
   output [3:0] ja_p,
   output [3:0] ja_n,
   output [4:1] jb_p,
@@ -115,6 +123,10 @@ wire [5:0]Trans0Data;    // output [5:0]Trans0Data;
 wire [5:0]Trans1Data;    // output [5:0]Trans1Data;
 wire [5:0]Trans2Data;    // output [5:0]Trans2Data;
 wire [5:0]Trans3Data;    // output [5:0]Trans3Data;
+
+wire [1:0]FraimSel;   //  input [1:0]FraimSel;
+wire SelHDMI;         //  input SelHDMI;
+wire SelStat;         //  input SelStat;
     
 Drone_Cam_BD Drone_Cam_BD_inst
 (
@@ -162,6 +174,9 @@ Drone_Cam_BD Drone_Cam_BD_inst
 .sccb_data_out_0(sccb_data_out_0),    //  output sccb_data_out_0;
 
 .Mem_cont       (sw             ),    // input [3:0]Mem_cont;
+.FraimSel(FraimSel),        //  input [1:0]FraimSel;
+.SelHDMI (SelHDMI ),         //  input SelHDMI;
+.SelStat (SelStat ),         //  input SelStat;
 
 .DDS_CSn_0     (DDS_CSn_0    ),      //   output DDS_CSn_0;
 .DDS_DataIn_0  (DDS_DataIn_0 ),      //   input [7:0]DDS_DataIn_0;
@@ -189,6 +204,48 @@ assign cam_iic_scl_io  = (sccb_clk_en_0) ? sccb_clk_0 : 1'b1;
 assign cam_iic_sda_io = (~sccb_data_en_0) ? sccb_data_out_0 : 1'bz;
 assign sccb_data_in_0 = cam_iic_sda_io;
 
+reg [3:0] Devbtn [1:0];
+always @(posedge ILA_clk or negedge rstn)  
+    if (!rstn) begin
+           Devbtn[0] <= 4'h0; 
+           Devbtn[1] <= 4'h0; 
+                end
+     else begin 
+           Devbtn[0] <= btn; 
+           Devbtn[1] <= Devbtn[0];
+            end                
+reg [19:0] debuncer;
+always @(posedge ILA_clk or negedge rstn)
+    if (!rstn) debuncer <= 20'hFFFFF;
+     else if (Devbtn[1] != Devbtn[0]) debuncer <= 20'h00000;
+     else if (debuncer == 20'hFFFFF) debuncer <= 20'hFFFFF;
+     else debuncer <= debuncer + 1;
+
+reg [1:0] FraimSelCount;
+always @(posedge ILA_clk or negedge rstn)
+    if (!rstn) FraimSelCount <= 2'b00;
+     else if (debuncer != 20'hFFFFF) FraimSelCount <= FraimSelCount;
+     else if (Devbtn[0][0] && ~Devbtn[0][1]) FraimSelCount <= FraimSelCount + 1;   
+assign FraimSel = FraimSelCount;   //  input [1:0]FraimSel;
+reg  SelHDMICount;
+always @(posedge ILA_clk or negedge rstn)
+    if (!rstn) SelHDMICount <= 1'b0;
+     else if (debuncer != 20'hFFFFF) SelHDMICount <= SelHDMICount;
+     else if (Devbtn[0][2] && ~Devbtn[1][2]) SelHDMICount <= SelHDMICount + 1;   
+assign SelHDMI = SelHDMICount;   //  input [1:0]FraimSel;
+reg  SelStatCount;
+always @(posedge ILA_clk or negedge rstn)
+    if (!rstn) SelStatCount <= 1'b0;
+     else if (debuncer != 20'hFFFFF) SelStatCount <= SelStatCount;
+     else if (Devbtn[0][3] && ~Devbtn[1][3]) SelStatCount <= SelStatCount + 1;   
+assign SelStat = SelStatCount;   //  input [1:0]FraimSel;
+
+assign led[0] = FraimSelCount[0]; //[0] }]; #IO_L23P_T3_35 Sch=led[0]  
+assign led[1] = FraimSelCount[1]; //[0] }]; #IO_L23P_T3_35 Sch=led[0]  
+assign led[2] = SelHDMICount; //[0] }]; #IO_L23P_T3_35 Sch=led[0]  
+assign led[3] = SelStatCount; //[0] }]; #IO_L23P_T3_35 Sch=led[0]  
+
+     
 /*
  assign je[8] = DDS_Ref;
  assign jc_p[3] = (btn[0]) ? 1'b1 : ~rstn; // reset
@@ -216,4 +273,6 @@ assign sccb_data_in_0 = cam_iic_sda_io;
  assign DDS_DataIn_0[1] = jd_n[2];
  assign DDS_DataIn_0[0] = jd_n[4];
  */
+ 
+ 
 endmodule
