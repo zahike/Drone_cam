@@ -230,18 +230,14 @@ wire [4:0] Reg_Cont_CMem1 = (Mem_cont[1]) ? Reg_CMem1 : 5'h10;
 wire [4:0] Reg_Cont_CMem2 = (Mem_cont[2]) ? Reg_CMem2 : 5'h10;
 wire [4:0] Reg_Cont_CMem3 = (Mem_cont[3]) ? Reg_CMem3 : 5'h10;
 
-reg [95:0] YCbCr4Pix;
+reg [59:0] YCbCr4Pix;
 always @(posedge Cclk or negedge rstn)
-    if (!rstn) YCbCr4Pix <= {96{1'b0}};
- //    else if ((Cnt_Div_Clk == 3'b011) && (HRadd[2:0] == 3'b000)) YCbCr4Pix <= {Reg_CMem3,3'b000,Reg_CMem2,3'b000,Reg_YMem3,3'b000,
-     else if (Cnt_Div_Clk == 3'b011) YCbCr4Pix <= {Reg_Cont_CMem3,3'b000,Reg_Cont_CMem2,3'b000,Reg_Cont_YMem3,3'b000,
-                                                   Reg_Cont_CMem3,3'b000,Reg_Cont_CMem2,3'b000,Reg_Cont_YMem2,3'b000,
-                                                   Reg_Cont_CMem1,3'b000,Reg_Cont_CMem0,3'b000,Reg_Cont_YMem1,3'b000,
-                                                   Reg_Cont_CMem1,3'b000,Reg_Cont_CMem0,3'b000,Reg_Cont_YMem0,3'b000};
-//     else if (Cnt_Div_Clk == 3'b011) YCbCr4Pix <= {16'h0000,Reg_YMem3,3'b000,
-//                                                   16'h0000,Reg_YMem2,3'b000,
-//                                                   16'h0000,Reg_YMem1,3'b000,
-//                                                   16'h0000,Reg_YMem0,3'b000};
+    if (!rstn) YCbCr4Pix <= {60{1'b0}};
+     else if (Cnt_Div_Clk == 3'b011) YCbCr4Pix <= {Reg_Cont_CMem3,Reg_Cont_CMem2,Reg_Cont_YMem3,
+                                                   Reg_Cont_CMem3,Reg_Cont_CMem2,Reg_Cont_YMem2,
+                                                   Reg_Cont_CMem1,Reg_Cont_CMem0,Reg_Cont_YMem1,
+                                                   Reg_Cont_CMem1,Reg_Cont_CMem0,Reg_Cont_YMem0
+                                                   };
 
 wire [95:0] RGB4Pix;
 
@@ -252,7 +248,7 @@ for (i=0;i<4;i=i+1) begin
         .clk      (Cclk),
         .rstn     (rstn),
                  
-        .YCbCrData(YCbCr4Pix[24*i+23:24*i]),
+        .YCbCrData(YCbCr4Pix[15*i+14:15*i]),
         .RGBdata  (RGB4Pix[24*i+23:24*i])
     );
 

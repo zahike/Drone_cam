@@ -35,77 +35,80 @@ input  wire m_axis_video_tready            ,
 output wire m_axis_video_tlast             ,
 output wire m_axis_video_tuser       
     );
-//localparam YRCONST = 77;
 //localparam YGCONST = 150;
-//localparam YBCONST = 29;
+localparam YGCONST = 100;
+localparam YBCONST = 29;
+localparam YRCONST = 77;
 
-//localparam CBRCONST = 43;
 //localparam CBGCONST = 85;
-//localparam CBBCONST = 128;
+localparam CBGCONST = 38;
+localparam CBBCONST = 128;
+localparam CBRCONST = 43;
 
-//localparam CRRCONST = 128;
 //localparam CRGCONST = 107;
-//localparam CRBCONST = 21;
+localparam CRGCONST = 57;
+localparam CRBCONST = 21;
+localparam CRRCONST = 128;
 
-//localparam YGCONST = 19;
-localparam YGCONST = 13;
-localparam YBCONST = 4;
-localparam YRCONST = 10;
+////localparam YGCONST = 19;
+//localparam YGCONST = 13;
+//localparam YBCONST = 4;
+//localparam YRCONST = 10;
 
-//localparam CBGCONST = 11;
-localparam CBGCONST = 5;
-localparam CBBCONST = 16;
-localparam CBRCONST = 5;
+////localparam CBGCONST = 11;
+//localparam CBGCONST = 5;
+//localparam CBBCONST = 16;
+//localparam CBRCONST = 5;
 
-//localparam CRGCONST = 13;
-localparam CRGCONST = 7;
-localparam CRBCONST = 3;
-localparam CRRCONST = 16;
+////localparam CRGCONST = 13;
+//localparam CRGCONST = 7;
+//localparam CRBCONST = 3;
+//localparam CRRCONST = 16;
 
-wire [4:0] G =  s_axis_video_tdata  [9:5];
-wire [4:0] B =  s_axis_video_tdata[19:15];
-wire [4:0] R =  s_axis_video_tdata[29:25];
+wire [7:0] G =  s_axis_video_tdata[ 9: 2];
+wire [7:0] B =  s_axis_video_tdata[19:12];
+wire [7:0] R =  s_axis_video_tdata[29:22];
 
-reg [9:0] YG ;
-reg [9:0] YB ;
-reg [9:0] YR ;
+reg [15:0] YG ;
+reg [15:0] YB ;
+reg [15:0] YR ;
 
 always @(posedge clk or negedge rstn)
-    if (!rstn) YG <= 10'h000 ;
+    if (!rstn) YG <= 16'h0000 ;
      else YG <= YGCONST*G;
 always @(posedge clk or negedge rstn)
-    if (!rstn) YB <= 10'h000 ;
+    if (!rstn) YB <= 16'h0000 ;
      else YB <= YBCONST*B;
 always @(posedge clk or negedge rstn)
-    if (!rstn) YR <= 10'h000 ;
+    if (!rstn) YR <= 16'h0000 ;
      else YR <= YRCONST*R;
 
-reg [9:0] CbG ;
-reg [9:0] CbB ;
-reg [9:0] CbR ;
+reg [15:0] CbG ;
+reg [15:0] CbB ;
+reg [15:0] CbR ;
 
 always @(posedge clk or negedge rstn)
-    if (!rstn) CbG <= 10'h000 ;
+    if (!rstn) CbG <= 16'h0000 ;
      else CbG <= CBGCONST*G;
 always @(posedge clk or negedge rstn)
-    if (!rstn) CbB <= 10'h000 ;
+    if (!rstn) CbB <= 16'h0000 ;
      else CbB <= CBBCONST*B;
 always @(posedge clk or negedge rstn)
-    if (!rstn) CbR <= 10'h000 ;
+    if (!rstn) CbR <= 16'h0000 ;
      else CbR <= CBRCONST*R;
 
-reg [9:0] CrG ;
-reg [9:0] CrB ;
-reg [9:0] CrR ;
+reg [15:0] CrG ;
+reg [15:0] CrB ;
+reg [15:0] CrR ;
 
 always @(posedge clk or negedge rstn)
-    if (!rstn) CrG <= 10'h000 ;
+    if (!rstn) CrG <= 16'h0000 ;
      else CrG <= CRGCONST*G;
 always @(posedge clk or negedge rstn)
-    if (!rstn) CrB <= 10'h000 ;
+    if (!rstn) CrB <= 16'h0000 ;
      else CrB <= CRBCONST*B;
 always @(posedge clk or negedge rstn)
-    if (!rstn) CrR <= 10'h000 ;
+    if (!rstn) CrR <= 16'h0000 ;
      else CrR <= CRRCONST*R;
 
 reg        Reg_m_axis_video_tvalid ;
@@ -126,13 +129,16 @@ always @(posedge clk or negedge rstn)
     if (!rstn) Reg_m_axis_video_tuser  <= 1'b0;  
      else Reg_m_axis_video_tuser  <= s_axis_video_tuser ;     
 
-wire [10:0] LongY  = 10'h000 + YR  + YG  + YB; 
-wire [10:0] LongCb = 10'h200 - CbR - CbG + CbB; 
-wire [10:0] LongCr = 10'h200 + CrR - CrG - CrB; 
+wire [15:0] LongY  = 16'h0000 + YR  + YG  + YB; 
+wire [15:0] LongCb = 16'h8000 - CbR - CbG + CbB; 
+wire [15:0] LongCr = 16'h8000 + CrR - CrG - CrB; 
 
-wire [4:0] Y  = (LongY[10:9] == 2'b10) ? 5'h1f : LongY [9:5]  ;
-wire [4:0] Cb = (LongY[10:9] == 2'b10) ? 5'h1f : LongCb[9:5] ;
-wire [4:0] Cr = (LongY[10:9] == 2'b10) ? 5'h1f : LongCr[9:5] ;
+//wire [7:0] Y  = (LongY[15:14] == 2'b10) ? 5'h1f : LongY [15:8]  ;
+//wire [7:0] Cb = (LongY[15:14] == 2'b10) ? 5'h1f : LongCb[15:8] ;
+//wire [7:0] Cr = (LongY[15:14] == 2'b10) ? 5'h1f : LongCr[15:8] ;
+wire [7:0] Y  = LongY [15:8]  ;
+wire [7:0] Cb = LongCb[15:8] ;
+wire [7:0] Cr = LongCr[15:8] ;
 
 
 
@@ -144,7 +150,7 @@ reg        Reg1_m_axis_video_tuser  ;
 
 always @(posedge clk or negedge rstn)
     if (!rstn) Reg1_m_axis_video_tdata  <= 24'h000000;
-     else Reg1_m_axis_video_tdata  <= {Cr,3'b000,Cb,3'b000,Y,3'b000};
+     else Reg1_m_axis_video_tdata  <= {Cr,Cb,Y};
 always @(posedge clk or negedge rstn)
     if (!rstn) Reg1_m_axis_video_tvalid <= 1'b0;
      else Reg1_m_axis_video_tvalid <= Reg_m_axis_video_tvalid;

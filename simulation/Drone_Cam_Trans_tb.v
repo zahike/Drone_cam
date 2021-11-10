@@ -259,8 +259,6 @@ SlantReceiver SlantReceiver_inst(
 .Receive2Data(Trans2Data),
 .Receive3Data(Trans3Data),
 
-.Mem_cont(4'hf),
-
 .FraimSync(RxFraimSync),
 .FraimSel(2'b00),
 

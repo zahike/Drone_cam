@@ -129,11 +129,11 @@ always @(posedge clk or negedge rstn)
      else if (Cnt_Div_Clk == 3'b000)  Reg_Div_Clk <= 1'b1;
      else if (Cnt_Div_Clk == 3'b010)  Reg_Div_Clk <= 1'b0;
 
-   BUFG BUFG_inst (
-      .O(PixelClk), // 1-bit output: Clock output
-      .I(Reg_Div_Clk)  // 1-bit input: Clock input
-   );
-//assign PixelClk = Reg_Div_Clk;
+//   BUFG BUFG_inst (
+//      .O(PixelClk), // 1-bit output: Clock output
+//      .I(Reg_Div_Clk)  // 1-bit input: Clock input
+//   );
+assign PixelClk = Reg_Div_Clk;
 
 reg [19:0] HRadd;
 
@@ -178,13 +178,13 @@ always @(posedge clk or negedge rstn)
      else if ((Cnt_Div_Clk == 3'b001) && !HMemRead && Del_HMemRead) REnslant <= {REnslant[0],REnslant[3:1]};
      else if ((Cnt_Div_Clk == 3'b000) && HMemRead && !HRadd[0]) REnslant <= {REnslant[2:0],REnslant[3]};
 
-reg [95:0] YCbCr4Pix;
+reg [59:0] YCbCr4Pix;
 always @(posedge clk or negedge rstn)
-    if (!rstn) YCbCr4Pix <= {96{1'b0}};
-     else if (Cnt_Div_Clk == 3'b011) YCbCr4Pix <= {Reg_CMem3,3'b000,Reg_CMem2,3'b000,Reg_YMem3,3'b000,
-                                                   Reg_CMem3,3'b000,Reg_CMem2,3'b000,Reg_YMem2,3'b000,
-                                                   Reg_CMem1,3'b000,Reg_CMem0,3'b000,Reg_YMem1,3'b000,
-                                                   Reg_CMem1,3'b000,Reg_CMem0,3'b000,Reg_YMem0,3'b000};
+    if (!rstn) YCbCr4Pix <= {60{1'b0}};
+     else if (Cnt_Div_Clk == 3'b011) YCbCr4Pix <= {Reg_CMem3,Reg_CMem2,Reg_YMem3,
+                                                   Reg_CMem3,Reg_CMem2,Reg_YMem2,
+                                                   Reg_CMem1,Reg_CMem0,Reg_YMem1,
+                                                   Reg_CMem1,Reg_CMem0,Reg_YMem0};
 wire [95:0] RGB4Pix;
 generate 
 for (i=0;i<4;i=i+1) begin
@@ -192,7 +192,7 @@ for (i=0;i<4;i=i+1) begin
         .clk      (clk),
         .rstn     (rstn),
                  
-        .YCbCrData(YCbCr4Pix[24*i+23:24*i]),
+        .YCbCrData(YCbCr4Pix[15*i+14:15*i]),
         .RGBdata  (RGB4Pix[24*i+23:24*i])
     );
 
