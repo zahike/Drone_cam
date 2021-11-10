@@ -72,6 +72,7 @@ int main()
     init_platform();
 
     xil_printf("Hello World\n\r");
+	sleep(1);
 
     APB[5] = START_FREQ; // set SCCB clock to ~200Khz
 	freq = 1000000/(START_FREQ*20);
