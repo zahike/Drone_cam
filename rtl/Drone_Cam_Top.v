@@ -273,6 +273,42 @@ assign led[3] = SelStatCount; //[0] }]; #IO_L23P_T3_35 Sch=led[0]
  assign DDS_DataIn_0[1] = jd_n[2];
  assign DDS_DataIn_0[0] = jd_n[4];
  */
+
+assign jb_p[1] = Trans0Data[0];
+assign jb_n[1] = Trans0Data[1];
+assign jb_p[2] = Trans0Data[2];
+assign jb_n[2] = Trans0Data[3];
+assign jb_p[3] = Trans0Data[4];
+assign jb_n[3] = Trans0Data[5];
+assign jb_p[4] = 1'b0;
+assign jb_n[4] = 1'b0;
+
+assign jc_n[1] = Trans1Data[0];
+assign jc_p[1] = Trans1Data[1];
+assign jc_n[2] = Trans1Data[2];
+assign jc_p[2] = Trans1Data[3];
+assign jc_n[3] = Trans1Data[4];
+assign jc_p[3] = Trans1Data[5];
+assign jc_n[4] = 1'b0;
+assign jc_p[4] = 1'b0;
+
+assign jd_p[1] = Trans2Data[0];
+assign jd_n[1] = Trans2Data[1];
+assign jd_p[2] = Trans2Data[2];
+assign jd_n[2] = Trans2Data[3];
+assign jd_p[3] = Trans2Data[4];
+assign jd_n[3] = Trans2Data[5];
+assign jd_p[4] = 1'b0;
+assign jd_n[4] = 1'b0;
+
+assign je  [1] = Trans3Data[0];
+assign je  [2] = Trans3Data[1];
+assign je  [3] = Trans3Data[2];
+assign je  [4] = Trans3Data[3];
+assign je  [5] = Trans3Data[4];
+assign je  [6] = Trans3Data[5];
+assign je  [7] = 1'b0;
+assign je  [8] = 1'b0;
  
  
 endmodule
